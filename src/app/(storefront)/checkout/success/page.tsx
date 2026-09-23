@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { CheckCircle2, Package, ArrowRight, Truck } from 'lucide-react'
 
 export const metadata = {
-  title: 'Order Confirmed | Anisha Spices',
+  title: 'Order Confirmed | Jaandaar Masale',
 }
 
 export default async function CheckoutSuccessPage({
@@ -21,12 +21,12 @@ export default async function CheckoutSuccessPage({
           
           {/* Brand Logo & Success Badge */}
           <div className="relative mx-auto w-20 h-20 mb-6 flex items-center justify-center">
-            <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-[#E5AD58] bg-black shadow-md">
+            <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-[#E5AD58] bg-[#FAF6F2] shadow-md">
               <Image
                 src="/images/logo.jpeg"
-                alt="Anisha Spices Logo"
+                alt="Jaandaar Masale Logo"
                 fill
-                className="object-cover"
+                className="object-contain p-1"
                 sizes="80px"
               />
             </div>
@@ -40,7 +40,7 @@ export default async function CheckoutSuccessPage({
           </h1>
           
           <p className="text-stone-600 text-sm mb-6 leading-relaxed">
-            Thank you for choosing <strong>Anisha Spices</strong>. Your order for 100% pure authentic spices has been received and is being prepared with utmost care.
+            Thank you for choosing <strong>Jaandaar Masale</strong>. Your order for 100% pure authentic spices has been received and is being prepared with utmost care.
           </p>
 
           {orderNumber && (

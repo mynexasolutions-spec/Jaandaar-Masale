@@ -1,43 +1,77 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getAuthUser } from '@/lib/userAuth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { MapPin, Package, Phone, Mail, ShieldCheck, ArrowRight, UserCheck, Sparkles, Clock } from 'lucide-react'
+import { MapPin, Package, ShieldCheck, ArrowRight, UserCheck, Sparkles } from 'lucide-react'
 import { ProfileForm } from './_components/ProfileForm'
 
 export const metadata = {
-  title: 'My Profile & Details | Anisha Spices',
+  title: 'My Profile & Details | Jaandaar Masale',
   description: 'Manage your personal details, contact number, and delivery settings.',
 }
 
 export default async function AccountProfilePage() {
+  const directUser = await getAuthUser()
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user: supabaseUser },
+  } = await supabase.auth.getUser()
 
-  if (!user) {
+  const activeUserId = directUser?.id || supabaseUser?.id
+
+  if (!activeUserId) {
     redirect('/login')
   }
 
+  const adminClient = createAdminClient()
+
   // 1. Fetch Profile
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  let profile: any = null
+  if (directUser) {
+    const { data: dbUser } = await adminClient
+      .from('users')
+      .select('*')
+      .eq('id', directUser.id)
+      .maybeSingle()
+
+    if (dbUser) {
+      profile = dbUser
+    } else {
+      const { data: dbProfile } = await adminClient
+        .from('profiles')
+        .select('*')
+        .eq('id', directUser.id)
+        .maybeSingle()
+      profile = dbProfile || {
+        full_name: directUser.full_name,
+        email: directUser.email,
+        phone: '',
+      }
+    }
+  } else if (supabaseUser) {
+    const { data: dbProfile } = await adminClient
+      .from('profiles')
+      .select('*')
+      .eq('id', supabaseUser.id)
+      .maybeSingle()
+    profile = dbProfile
+  }
 
   // 2. Fetch Primary Address
-  const { data: defaultAddress } = await supabase
+  const { data: defaultAddress } = await adminClient
     .from('addresses')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('user_id', activeUserId)
     .order('is_default', { ascending: false })
     .limit(1)
     .maybeSingle()
 
   // 3. Fetch Orders Count
-  const { count: ordersCount } = await supabase
+  const { count: ordersCount } = await adminClient
     .from('orders')
     .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
+    .eq('user_id', activeUserId)
 
   return (
     <div className="space-y-6">
@@ -56,7 +90,6 @@ export default async function AccountProfilePage() {
               Manage your personal information, mobile contact, and default delivery preferences.
             </p>
           </div>
-
         </div>
 
         {/* 3 Quick Stat Metric Badges */}
@@ -112,9 +145,9 @@ export default async function AccountProfilePage() {
           </div>
 
           <ProfileForm 
-            initialFullName={profile?.full_name || ''} 
+            initialFullName={profile?.full_name || directUser?.full_name || ''} 
             initialPhone={profile?.phone || ''}
-            email={profile?.email || user.email || ''} 
+            email={profile?.email || directUser?.email || supabaseUser?.email || ''} 
           />
         </div>
 
@@ -186,19 +219,6 @@ export default async function AccountProfilePage() {
                 </div>
                 <ArrowRight className="w-3.5 h-3.5 text-stone-400" />
               </Link>
-
-              <a
-                href="https://wa.me/919999999999?text=Hi%20Anisha%20Spices%2C%20I%20need%20assistance%20with%20my%20account."
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between py-2.5 text-emerald-800 hover:text-emerald-900 font-semibold transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <span>💬</span>
-                  <span>WhatsApp Concierge</span>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5 text-stone-400" />
-              </a>
             </div>
           </div>
 

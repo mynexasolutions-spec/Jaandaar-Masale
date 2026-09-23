@@ -6,15 +6,14 @@ import { User, MapPin, Package, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
+import { logout } from '@/actions/auth'
+
 export function AccountNav() {
   const pathname = usePathname()
   const router = useRouter()
-  const supabase = createClient()
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
+    await logout()
   }
 
   const links = [

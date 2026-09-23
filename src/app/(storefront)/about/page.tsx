@@ -108,27 +108,27 @@ const COMPARISON_POINTS = [
   {
     feature: 'Grinding Method',
     regular: 'High-speed industrial pulverizers (burns natural essential oils)',
-    anisha: 'Cold-process slow grinding (locks in volatile oils & true aroma)',
+    jaandaar: 'Cold-process slow grinding (locks in volatile oils & true aroma)',
   },
   {
     feature: 'Artificial Color & Dyes',
     regular: 'Often adulterated with synthetic red/yellow dyes (Sudan, Tartrazine)',
-    anisha: '100% Natural Hue — zero colors, zero chemicals, pure botanical pigment',
+    jaandaar: '100% Natural Hue — zero colors, zero chemicals, pure botanical pigment',
   },
   {
     feature: 'Fillers & Bulking Agents',
     regular: 'Starch, sawdust, spent spices, or salt added for weight',
-    anisha: 'Zero fillers, zero additives — 100% pure whole spice powder',
+    jaandaar: 'Zero fillers, zero additives — 100% pure whole spice powder',
   },
   {
     feature: 'Packaging & Shelf Aroma',
     regular: 'Thin plastic bags prone to moisture loss and oxidation',
-    anisha: 'Multi-layer aroma-barrier pouches with zipper lock',
+    jaandaar: 'Multi-layer aroma-barrier pouches with zipper lock',
   },
   {
     feature: 'Lab Quality Testing',
     regular: 'Rare batch tests, mass aggregated',
-    anisha: 'Every single batch tested for heavy metals & purity standards',
+    jaandaar: 'Every single batch tested for heavy metals & purity standards',
   },
 ]
 
@@ -136,7 +136,7 @@ const COMPARISON_POINTS = [
 const FAQS = [
   {
     q: 'How does Cold-Process Grinding make a difference to my food?',
-    a: 'Normal commercial grinders run at extreme speeds and generate temperatures above 80°C, which evaporates volatile spice oils (responsible for flavor and aroma). Anisha Spices uses controlled low-temperature grinding below 40°C, keeping the medicinal curcumin in haldi and the natural capsaicin in chillies fully intact.',
+    a: 'Normal commercial grinders run at extreme speeds and generate temperatures above 80°C, which evaporates volatile spice oils (responsible for flavor and aroma). Jaandaar Masale uses controlled low-temperature grinding below 40°C, keeping the medicinal curcumin in haldi and the natural capsaicin in chillies fully intact.',
   },
   {
     q: 'Why does your Red Chilly look naturally deeper rather than fluorescent red?',
@@ -147,7 +147,7 @@ const FAQS = [
     a: 'Yes, absolutely. Every production lot is tested by NABL-accredited laboratories to verify zero adulteration, zero heavy metals (Lead, Cadmium), and zero chemical pesticides before packaging.',
   },
   {
-    q: 'How should I store Anisha Spices once opened?',
+    q: 'How should I store Jaandaar Masale once opened?',
     a: 'Keep the spices in our resealable aroma-protection pouches or transfer them into clean, dry airtight glass/steel jars away from direct sunlight and stove heat to maintain peak fragrance.',
   },
 ]
@@ -186,7 +186,7 @@ export default function AboutPage() {
               </h1>
 
               <p className="text-sm sm:text-base lg:text-lg text-stone-200/90 max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
-                Anisha Spices was born from a timeless conviction: your family deserves pure, unadulterated spices ground cold with natural oils, rich aroma, and zero shortcuts.
+                Jaandaar Masale was born from a timeless conviction: your family deserves pure, unadulterated spices ground cold with natural oils, rich aroma, and zero shortcuts.
               </p>
 
               {/* Action Buttons */}
@@ -290,7 +290,7 @@ export default function AboutPage() {
                   In traditional Indian households, spices are more than just cooking ingredients — they are the heartbeat of family feasts, ancestral healing remedies, and lifelong memories.
                 </p>
                 <p>
-                  Yet, modern mass-produced powders often lose their natural oils and potency through harsh high-heat pulverization, artificial colors, and added starches. At <strong>Anisha Spices</strong>, we set out to restore that lost culinary glory.
+                  Yet, modern mass-produced powders often lose their natural oils and potency through harsh high-heat pulverization, artificial colors, and added starches. At <strong>Jaandaar Masale</strong>, we set out to restore that lost culinary glory.
                 </p>
                 <p>
                   We partner directly with generational farmers in Salem, Guntur, and Saurashtra. Every batch of our Turmeric, Kashmiri Red Chilly, Coriander, and Garam Masala is roasted gently and ground cold, locking in the natural antioxidants and unmistakable aroma.
@@ -574,7 +574,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 6. The Purity Showdown: Market Spices vs. Anisha Spices */}
+      {/* 6. The Purity Showdown: Market Spices vs. Jaandaar Masale */}
       <section className="py-20 sm:py-28 bg-[#F8ECE7] border-y border-[#E8DACB] relative">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           
@@ -583,7 +583,7 @@ export default function AboutPage() {
               The Honest Comparison
             </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-black text-[#2A1612] tracking-tight">
-              Ordinary Spices vs. <span className="text-[#80121A]">Anisha</span>
+              Ordinary Spices vs. <span className="text-[#80121A]">Jaandaar</span>
             </h2>
             <p className="text-sm sm:text-base text-[#6E5951]">
               See why switching to honest, cold-ground spices makes every meal healthier and tastier.
@@ -595,7 +595,7 @@ export default function AboutPage() {
             <div className="grid grid-cols-1 md:grid-cols-12 bg-[#FAF6F2] p-4 sm:p-6 border-b border-[#E8DACB] text-xs font-bold uppercase tracking-wider text-[#8C7567]">
               <div className="md:col-span-4 hidden md:block">Quality Parameter</div>
               <div className="md:col-span-4 text-rose-900 font-bold">Standard Market Brands</div>
-              <div className="md:col-span-4 text-[#80121A] font-black">Anisha Spices Guaranteed</div>
+              <div className="md:col-span-4 text-[#80121A] font-black">Jaandaar Masale Guaranteed</div>
             </div>
 
             <div className="divide-y divide-[#F0E5D8]">
@@ -612,7 +612,7 @@ export default function AboutPage() {
 
                   <div className="md:col-span-4 flex items-start gap-2 text-xs text-[#2A1612] bg-[#FAF3EB] p-3 rounded-xl border border-[#E8DACB] font-medium">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span>{item.anisha}</span>
+                    <span>{item.jaandaar}</span>
                   </div>
                 </div>
               ))}
@@ -749,7 +749,7 @@ export default function AboutPage() {
               </div>
 
               <p className="text-[11px] text-[#8C7567] italic text-center">
-                * Every batch of Anisha Spices is tested to exceed stringent FSSAI and AGMARK standards.
+                * Every batch of Jaandaar Masale is tested to exceed stringent FSSAI and AGMARK standards.
               </p>
             </div>
 

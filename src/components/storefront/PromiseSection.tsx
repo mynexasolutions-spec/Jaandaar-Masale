@@ -62,7 +62,7 @@ export function PromiseSection() {
               Pure. Natural. <span className="text-[#7B111A]">Trusted.</span>
             </h2>
             <p className="text-sm sm:text-base text-[#5A433B] leading-relaxed max-w-md mx-auto lg:mx-0">
-              At Anisha Spices, we promise to deliver spices that are 100% pure, natural &amp; free from harmful additives.
+              At Jaandaar Masale, we promise to deliver spices that are 100% pure, natural &amp; free from harmful additives.
             </p>
           </div>
 

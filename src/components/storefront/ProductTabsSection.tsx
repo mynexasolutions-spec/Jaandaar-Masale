@@ -234,7 +234,7 @@ export function ProductTabsSection({
             <div className="p-4 sm:p-5 rounded-2xl bg-[#FAF3EB] border border-[#C89B65]/40 text-[#7B111A] text-xs sm:text-sm font-medium flex items-center gap-3">
               <span className="text-2xl">🌿</span>
               <p>
-                <strong>Pure Tradition:</strong> Unlike commercial mass-grinding which burns volatile oils at high heat, Anisha Spices are processed at low friction temperatures for intense natural flavor and long-lasting freshness.
+                <strong>Pure Tradition:</strong> Unlike commercial mass-grinding which burns volatile oils at high heat, Jaandaar Masale are processed at low friction temperatures for intense natural flavor and long-lasting freshness.
               </p>
             </div>
           </div>
@@ -334,7 +334,7 @@ export function ProductTabsSection({
               </p>
               <a
                 href={`https://wa.me/919540048786?text=${encodeURIComponent(
-                  `Hi Anisha Spices, I have a query about ${productName}`
+                  `Hi Jaandaar Masale, I have a query about ${productName}`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"

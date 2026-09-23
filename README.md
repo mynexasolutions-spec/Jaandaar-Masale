@@ -1,4 +1,4 @@
-# 🌿 Anisha Spices
+# 🌿 Jaandaar Masale
 
 > **Pure Spice. Real Taste. Trusted Every Time.**  
 > A full-stack, production-ready D2C e-commerce platform built with Next.js (App Router), Supabase (PostgreSQL + Auth + RLS), Brevo (Transactional Email & Auth OTPs), and Razorpay.
@@ -38,13 +38,13 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
 SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
 
 # ─── Admin Seed Credentials ───────────────────────────────
-ADMIN_EMAIL="admin@anishamasala.com"
+ADMIN_EMAIL="admin@jaandaarmasale.com"
 ADMIN_PASSWORD="your-secure-admin-password"
 
 # ─── Brevo (Transactional Emails & Auth OTPs) ──────────────
 BREVO_API_KEY="xkeysib-..."
 BREVO_SENDER_EMAIL="noreply@yourdomain.com"
-BREVO_SENDER_NAME="Anisha Masale"
+BREVO_SENDER_NAME="Jaandaar Masale"
 
 # ─── Razorpay Payment Gateway ─────────────────────────────
 NEXT_PUBLIC_RAZORPAY_KEY_ID="rzp_live_..."
@@ -52,10 +52,10 @@ RAZORPAY_KEY_ID="rzp_live_..."
 RAZORPAY_KEY_SECRET="your-razorpay-key-secret"
 RAZORPAY_WEBHOOK_SECRET="your-razorpay-webhook-secret"
 
-# ─── Cloudinary (Product Media Uploads) ───────────────────
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
-CLOUDINARY_API_KEY="your-api-key"
-CLOUDINARY_API_SECRET="your-api-secret"
+# ─── ImageKit (Product & Media Uploads) ───────────────────
+NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY="your-public-key"
+IMAGEKIT_PRIVATE_KEY="your-private-key"
+NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT="https://ik.imagekit.io/your_id"
 ```
 
 ---
@@ -138,9 +138,9 @@ Migrations are managed in `supabase/migrations/`:
 - **Email Service**: Brevo API v3 (REST SMTP client with IPv4 prioritization)
 - **Payments**: Razorpay SDK + Webhooks + Cash on Delivery (COD)
 - **Styling**: Tailwind CSS & Lucide Icons
-- **Media**: Cloudinary Widget + Local Optimized Assets
+- **Media**: ImageKit CDN & Storage + Local Optimized Assets
 
 ---
 
 ## 📜 License
-Private & Proprietary — Developed for **Anisha Spices**.
+Private & Proprietary — Developed for **Jaandaar Masale**.

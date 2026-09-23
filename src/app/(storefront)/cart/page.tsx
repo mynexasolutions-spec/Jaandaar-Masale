@@ -5,7 +5,7 @@ import { ShoppingBag, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react'
 import { CartItemsList } from './_components/CartItemsList'
 
 export const metadata = {
-  title: 'Your Shopping Cart | Anisha Spices',
+  title: 'Your Shopping Cart | Jaandaar Masale',
   description: 'Review your selected spices and proceed to checkout.',
 }
 

@@ -3,9 +3,10 @@ import { ProductCard } from '@/components/storefront/ProductCard'
 import Link from 'next/link'
 import { ShopSidebar } from './_components/ShopSidebar'
 import { Sparkles, X, ChevronRight } from 'lucide-react'
+import { FALLBACK_PRODUCTS } from '@/constants/fallbackProducts'
 
 export const metadata = {
-  title: 'Shop All Spices — Pure Indian Spices | Anisha Spices',
+  title: 'Shop All Spices — Pure Indian Spices | Jaandaar Masale',
   description: 'Explore our full range of 100% pure, cold-ground Turmeric, Kashmiri Red Chilly, Coriander, Cumin, and Garam Masala.',
 }
 
@@ -83,7 +84,7 @@ export default async function ShopPage({
   const totalPages = Math.ceil(count / limit) || 1
 
   // Process products to find minimum variant price & discounts
-  const formattedProducts = (products || []).map((product: any) => {
+  let formattedProducts = (products || []).map((product: any) => {
     const activeVariants = product.product_variants?.filter((v: any) => v.is_active) || []
     const prices = activeVariants.map((v: any) => v.price)
     const minPrice = prices.length > 0 ? Math.min(...prices) : null
@@ -104,6 +105,27 @@ export default async function ShopPage({
       reviewCount,
     }
   })
+
+  // Fallback to static catalog if DB is empty
+  if (formattedProducts.length === 0 && !searchQuery) {
+    formattedProducts = Object.values(FALLBACK_PRODUCTS).map((p) => {
+      const activeVariants = p.product_variants.filter((v) => v.is_active)
+      const prices = activeVariants.map((v) => v.price)
+      const minPrice = prices.length > 0 ? Math.min(...prices) : null
+      const minVariant = activeVariants.find((v) => v.price === minPrice)
+      return {
+        id: p.id,
+        slug: p.slug,
+        name: p.name,
+        shortDescription: p.short_description,
+        featuredImage: p.featured_image_url,
+        minPrice,
+        originalPrice: minVariant?.original_price || null,
+        rating: p.average_rating,
+        reviewCount: p.review_count,
+      }
+    })
+  }
 
   const currentCategoryName = categoryFilter
     ? categories?.find((c: any) => c.slug === categoryFilter)?.name

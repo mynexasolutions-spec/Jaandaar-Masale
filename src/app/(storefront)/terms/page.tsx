@@ -14,8 +14,8 @@ import {
 } from 'lucide-react'
 
 export const metadata = {
-  title: 'Terms of Service | Anisha Spices',
-  description: 'Understand the terms, shipping conditions, and return guarantees for purchasing pure spices from Anisha Spices.',
+  title: 'Terms of Service | Jaandaar Masale',
+  description: 'Understand the terms, shipping conditions, and return guarantees for purchasing pure spices from Jaandaar Masale.',
 }
 
 export default function TermsOfServicePage() {
@@ -41,7 +41,7 @@ export default function TermsOfServicePage() {
           </p>
 
           <p className="text-xs text-[#E5AD58] font-semibold pt-1">
-            Last Updated: September 2026 • Anisha Spices
+            Last Updated: September 2026 • Jaandaar Masale
           </p>
         </div>
       </div>
@@ -98,7 +98,7 @@ export default function TermsOfServicePage() {
               </h2>
             </div>
             <p className="text-sm sm:text-base text-[#5A433B] leading-relaxed pl-11">
-              By accessing our website or placing an order with <strong>Anisha Spices</strong>, you agree to be bound by these Terms of Service. These terms apply to all visitors, registered customers, and merchant buyers. If you disagree with any part of these terms, please contact our team before placing an order.
+              By accessing our website or placing an order with <strong>Jaandaar Masale</strong>, you agree to be bound by these Terms of Service. These terms apply to all visitors, registered customers, and merchant buyers. If you disagree with any part of these terms, please contact our team before placing an order.
             </p>
           </section>
 
@@ -189,7 +189,7 @@ export default function TermsOfServicePage() {
             </div>
             <div className="pl-11 space-y-2 text-sm sm:text-base text-[#5A433B] leading-relaxed">
               <p>
-                All prices are stated in Indian Rupees (INR) and are inclusive of applicable GST. We reserve the right to revise spice pricing based on seasonal harvest yields and agricultural commodity costs. All Anisha Spices products meet rigorous FSSAI quality benchmarks.
+                All prices are stated in Indian Rupees (INR) and are inclusive of applicable GST. We reserve the right to revise spice pricing based on seasonal harvest yields and agricultural commodity costs. All Jaandaar Masale products meet rigorous FSSAI quality benchmarks.
               </p>
             </div>
           </section>
@@ -209,7 +209,7 @@ export default function TermsOfServicePage() {
                     <Phone className="w-3.5 h-3.5" /> +91 9540048786
                   </span>
                   <span className="flex items-center gap-1">
-                    <Mail className="w-3.5 h-3.5" /> support@anishaspices.com
+                    <Mail className="w-3.5 h-3.5" /> support@jaandaarmasale.com
                   </span>
                 </div>
               </div>

@@ -6,12 +6,12 @@ import { AnnouncementBar } from '@/components/storefront/AnnouncementBar'
 import { FloatingContact } from '@/components/storefront/FloatingContact'
 import { MobileBottomBar } from '@/components/storefront/MobileBottomBar'
 import { createClient } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
+import { getEffectiveUser } from '@/lib/userAuth'
 
 export const metadata = {
   title: {
-    template: '%s | Anisha Spices',
-    default: 'Anisha Spices | Pure Spice. Real Taste. Trusted Every Time.',
+    template: '%s | Jaandaar Masale',
+    default: 'Jaandaar Masale | Pure Spice. Real Taste. Trusted Every Time.',
   },
   description: 'Bringing the authentic, rich flavors and uncompromised purity of traditional Indian spices right to your kitchen.',
 }
@@ -23,13 +23,10 @@ export default async function StorefrontLayout({
 }) {
   let cartCount = 0
   let isLoggedIn = false
+  let currentUser: { name: string; email: string } | null = null
   let categories: { name: string; slug: string }[] = []
 
   try {
-    const cookieStore = await cookies()
-    const allCookies = cookieStore.getAll()
-    const hasAuthCookie = allCookies.some(c => c.name.startsWith('sb-') && c.name.endsWith('-auth-token'))
-
     try {
       const supabase = await createClient()
       const { data } = await supabase
@@ -46,10 +43,13 @@ export default async function StorefrontLayout({
 
     cartCount = await getCartCount()
 
-    if (hasAuthCookie) {
-      const supabase = await createClient()
-      const { data } = await supabase.auth.getUser()
-      isLoggedIn = !!data?.user
+    const authUser = await getEffectiveUser()
+    if (authUser) {
+      isLoggedIn = true
+      currentUser = {
+        name: authUser.full_name,
+        email: authUser.email,
+      }
     }
   } catch {
     // Safe offline fallback
@@ -59,7 +59,7 @@ export default async function StorefrontLayout({
     <CartProvider initialCount={cartCount}>
       <div className="min-h-screen flex flex-col bg-[#F8ECE7]">
         <AnnouncementBar />
-        <Navbar isLoggedIn={isLoggedIn} categories={categories} />
+        <Navbar isLoggedIn={isLoggedIn} user={currentUser} categories={categories} />
         <main className="flex-grow">{children}</main>
         <Footer />
         <FloatingContact />

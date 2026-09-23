@@ -46,15 +46,20 @@ export async function updateSession(request: NextRequest) {
 
     // Only do network auth lookup if path actually requires authentication
     if (isProtectedPath || isAdminPath) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const hasUserCookie = !!request.cookies.get('user_session')?.value
+      const hasAdminCookie = request.cookies.get('admin_session')?.value === 'authenticated'
 
-      if (isProtectedPath && !user) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/login'
-        url.searchParams.set('redirect', request.nextUrl.pathname)
-        return NextResponse.redirect(url)
+      if (isProtectedPath && !hasUserCookie) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+
+        if (!user) {
+          const url = request.nextUrl.clone()
+          url.pathname = '/login'
+          url.searchParams.set('redirect', request.nextUrl.pathname)
+          return NextResponse.redirect(url)
+        }
       }
 
       if (isAdminPath) {

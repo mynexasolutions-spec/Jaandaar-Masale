@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getAuthUser } from '@/lib/userAuth'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { AccountNav } from '@/components/storefront/AccountNav'
@@ -9,24 +10,35 @@ export default async function AccountLayout({
 }: {
   children: React.ReactNode
 }) {
+  const directUser = await getAuthUser()
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user: supabaseUser },
+  } = await supabase.auth.getUser()
 
   const cookieStore = await cookies()
   const hasAdminCookie = cookieStore.get('admin_session')?.value === 'authenticated'
 
-  if (!user && !hasAdminCookie) {
+  const activeUser = directUser || supabaseUser
+
+  if (!activeUser && !hasAdminCookie) {
     redirect('/login')
   }
 
   const adminClient = createAdminClient()
   let profile: any = null
 
-  if (user) {
+  if (directUser) {
+    profile = {
+      full_name: directUser.full_name,
+      email: directUser.email,
+      role: directUser.role,
+    }
+  } else if (supabaseUser) {
     const { data } = await adminClient
       .from('profiles')
       .select('full_name, email, role')
-      .eq('id', user.id)
+      .eq('id', supabaseUser.id)
       .maybeSingle()
     profile = data
   } else if (hasAdminCookie) {
@@ -37,7 +49,7 @@ export default async function AccountLayout({
       .maybeSingle()
     profile = data || {
       full_name: 'Store Administrator',
-      email: 'admin@anishamasala.com',
+      email: 'admin@jaandaarmasale.com',
       role: 'admin',
     }
   }

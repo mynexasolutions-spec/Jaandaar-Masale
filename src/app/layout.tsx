@@ -15,19 +15,15 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: {
-    default: "Anisha Spices — Pure Spice. Real Taste. Trusted Every Time.",
-    template: "%s | Anisha Spices",
+    default: "Jaandaar Masale — Pure Spice. Real Taste. Trusted Every Time.",
+    template: "%s | Jaandaar Masale",
   },
   description:
-    "Anisha Spices brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor.",
+    "Jaandaar Masale brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor.",
   icons: {
     icon: [
+      { url: '/images/logo.jpeg', sizes: 'any' },
       { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/icon.png', sizes: '192x192', type: 'image/png' },
-    ],
-    apple: [
-      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
     ],
   },
 };

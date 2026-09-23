@@ -33,7 +33,7 @@ export function HeritageSeal({
   return (
     <div
       className={`relative inline-flex items-center justify-center select-none group ${className}`}
-      title="Anisha Spices — 100% Pure & Authentic Heritage Seal"
+      title="Jaandaar Masale — 100% Pure & Authentic Heritage Seal"
     >
       {/* Outer ambient golden aura glow */}
       <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#C89B65]/20 via-[#7B111A]/10 to-[#C89B65]/25 blur-xl group-hover:blur-2xl transition-all duration-500 opacity-80 group-hover:opacity-100" />
@@ -66,7 +66,7 @@ export function HeritageSeal({
             style={{ letterSpacing: '0.24em' }}
           >
             <textPath href={`#${textPathId}`} startOffset="0%">
-              ★ ANISHA SPICES ★ 100% PURE & NATURAL ★ TRADITIONAL TASTE ★
+              ★ Jaandaar Masale ★ 100% PURE & NATURAL ★ TRADITIONAL TASTE ★
             </textPath>
           </text>
         </svg>
@@ -77,7 +77,7 @@ export function HeritageSeal({
         >
           <Image
             src={SPICE_ASSETS.logo}
-            alt="Anisha Spices Authentic Seal"
+            alt="Jaandaar Masale Authentic Seal"
             fill
             sizes="(max-width: 768px) 120px, 200px"
             className="object-cover"

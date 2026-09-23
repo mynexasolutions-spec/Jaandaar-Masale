@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import Image from 'next/image'
 import { createHeroSlide, deleteHeroSlide, toggleHeroSlideStatus, updateHeroSlideText } from '@/actions/admin/hero'
 import { Trash2, Plus, GripVertical, Image as ImageIcon, Loader2, ChevronDown, ChevronUp, Save } from 'lucide-react'
-import { CldUploadWidget } from 'next-cloudinary'
+import { ImageKitUpload } from '@/components/admin/ImageKitUpload'
 
 export function HeroSlideList({ 
   initialSlides, 
@@ -24,8 +24,8 @@ export function HeroSlideList({
   // Track text edits for the currently expanded slide
   const [editData, setEditData] = useState({ title: '', subtitle: '', button_text: '', button_link: '' })
 
-  const handleUploadSuccess = (result: any) => {
-    const imageUrl = result.info.secure_url
+  const handleUploadSuccess = (result: { url: string }) => {
+    const imageUrl = result.url
     
     startTransition(async () => {
       const res = await createHeroSlide(imageUrl, globalText)
@@ -94,26 +94,27 @@ export function HeroSlideList({
         </div>
         
         {slides.length < 5 ? (
-          <CldUploadWidget 
-            signatureEndpoint="/api/cloudinary/sign"
-            options={{
-              maxFiles: 1,
-              resourceType: "image",
-              clientAllowedFormats: ["jpg", "jpeg", "png", "webp"]
-            }}
+          <ImageKitUpload 
+            folder="/hero-slides"
+            multiple={false}
             onSuccess={handleUploadSuccess}
           >
-            {({ open }) => (
+            {({ open, isUploading }) => (
               <button
-                onClick={() => open()}
-                disabled={isPending}
-                className="flex items-center gap-2 px-4 py-2 bg-stone-900 text-white text-sm font-semibold rounded-xl hover:bg-stone-800 transition-colors disabled:opacity-50"
+                type="button"
+                onClick={open}
+                disabled={isPending || isUploading}
+                className="flex items-center gap-2 px-4 py-2 bg-stone-900 text-white text-sm font-semibold rounded-xl hover:bg-stone-800 transition-colors disabled:opacity-50 cursor-pointer"
               >
-                <Plus className="w-4 h-4" />
-                Add Slide
+                {isUploading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Plus className="w-4 h-4" />
+                )}
+                {isUploading ? 'Uploading...' : 'Add Slide'}
               </button>
             )}
-          </CldUploadWidget>
+          </ImageKitUpload>
         ) : (
           <span className="text-sm font-medium text-orange-600 bg-orange-50 px-3 py-1 rounded-full border border-orange-200">
             Maximum 5 slides reached

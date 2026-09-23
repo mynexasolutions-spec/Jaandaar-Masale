@@ -1,37 +1,52 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getEffectiveUser, setUserSession } from '@/lib/userAuth'
 import { revalidatePath } from 'next/cache'
 
 export async function updateProfile(formData: FormData) {
-  const supabase = await createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getEffectiveUser()
   if (!user) {
-    return { success: false, error: 'Unauthorized' }
+    return { success: false, error: 'Unauthorized. Please sign in.' }
   }
 
-  const fullName = formData.get('full_name')?.toString()
-  const phone = formData.get('phone')?.toString()
+  const fullName = formData.get('full_name')?.toString()?.trim()
+  const phone = formData.get('phone')?.toString()?.trim()
 
   if (!fullName) {
     return { success: false, error: 'Full Name is required' }
   }
 
-  const { error } = await supabase
-    .from('profiles')
+  const adminClient = createAdminClient()
+
+  await adminClient
+    .from('users')
     .update({ 
       full_name: fullName,
-      phone: phone || null,
+      phone: phone || '',
+      updated_at: new Date().toISOString(),
     })
     .eq('id', user.id)
 
-  if (error) {
-    return { success: false, error: error.message }
-  }
+  await adminClient
+    .from('profiles')
+    .update({ 
+      full_name: fullName,
+      phone: phone || '',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', user.id)
+
+  // Update session cookie with new name
+  await setUserSession({
+    ...user,
+    full_name: fullName,
+    phone: phone || '',
+  })
 
   revalidatePath('/account')
   revalidatePath('/account/addresses')
+  revalidatePath('/', 'layout')
   
   return { success: true }
 }

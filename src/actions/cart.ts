@@ -1,8 +1,11 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getEffectiveUser } from '@/lib/userAuth'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
+import { FALLBACK_PRODUCTS } from '@/constants/fallbackProducts'
 
 type GuestCartItem = {
   id: string
@@ -33,9 +36,8 @@ async function saveGuestCart(cart: GuestCartItem[]) {
 }
 
 export async function addToCart(variantId: string, quantity: number = 1) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getEffectiveUser()
+  const adminClient = createAdminClient()
 
   if (!user) {
     // Guest cart flow
@@ -57,25 +59,23 @@ export async function addToCart(variantId: string, quantity: number = 1) {
   }
 
   // Check if this variant already exists in the user's cart
-  const { data: existing } = await supabase
+  const { data: existing } = await adminClient
     .from('cart_items')
     .select('id, quantity')
     .eq('user_id', user.id)
     .eq('variant_id', variantId)
-    .single()
+    .maybeSingle()
 
   if (existing) {
-    // Update quantity
     const newQty = existing.quantity + quantity
-    const { error } = await supabase
+    const { error } = await adminClient
       .from('cart_items')
       .update({ quantity: newQty })
       .eq('id', existing.id)
 
     if (error) return { success: false, error: error.message }
   } else {
-    // Insert new
-    const { error } = await supabase
+    const { error } = await adminClient
       .from('cart_items')
       .insert([{ user_id: user.id, variant_id: variantId, quantity }])
 
@@ -87,9 +87,8 @@ export async function addToCart(variantId: string, quantity: number = 1) {
 }
 
 export async function removeFromCart(cartItemId: string) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getEffectiveUser()
+  const adminClient = createAdminClient()
 
   if (!user) {
     // Guest cart flow
@@ -100,7 +99,7 @@ export async function removeFromCart(cartItemId: string) {
     return { success: true }
   }
 
-  const { error } = await supabase
+  const { error } = await adminClient
     .from('cart_items')
     .delete()
     .eq('id', cartItemId)
@@ -113,9 +112,8 @@ export async function removeFromCart(cartItemId: string) {
 }
 
 export async function updateCartQuantity(cartItemId: string, quantity: number) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getEffectiveUser()
+  const adminClient = createAdminClient()
 
   if (!user) {
     if (quantity <= 0) {
@@ -136,7 +134,7 @@ export async function updateCartQuantity(cartItemId: string, quantity: number) {
     return removeFromCart(cartItemId)
   }
 
-  const { error } = await supabase
+  const { error } = await adminClient
     .from('cart_items')
     .update({ quantity })
     .eq('id', cartItemId)
@@ -150,8 +148,8 @@ export async function updateCartQuantity(cartItemId: string, quantity: number) {
 
 export async function getCart() {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getEffectiveUser()
+    const adminClient = createAdminClient()
 
     if (!user) {
       const cart = await getGuestCart()
@@ -160,7 +158,7 @@ export async function getCart() {
       const variantIds = cart.map(i => i.variant_id)
 
       // Fetch variant details for guest cart
-      const { data, error } = await supabase
+      const { data, error } = await adminClient
         .from('product_variants')
         .select(`
           id,
@@ -183,7 +181,30 @@ export async function getCart() {
 
       // Map cookies array back to cart items shape
       const items = cart.map(item => {
-        const variant = data?.find(v => v.id === item.variant_id)
+        let variant = data?.find(v => v.id === item.variant_id)
+        if (!variant) {
+          for (const p of Object.values(FALLBACK_PRODUCTS)) {
+            const fv = p.product_variants.find(v => v.id === item.variant_id)
+            if (fv) {
+              variant = {
+                id: fv.id,
+                variant_name: fv.variant_name,
+                price: fv.price,
+                original_price: fv.original_price,
+                stock_quantity: fv.stock_quantity,
+                is_active: fv.is_active,
+                product_id: p.id,
+                products: {
+                  id: p.id,
+                  name: p.name,
+                  slug: p.slug,
+                  featured_image_url: p.featured_image_url,
+                }
+              } as any
+              break
+            }
+          }
+        }
         return {
           id: item.id,
           quantity: item.quantity,
@@ -201,7 +222,7 @@ export async function getCart() {
       return { success: true, items }
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await adminClient
       .from('cart_items')
       .select(`
         id,
@@ -237,24 +258,15 @@ export async function getCart() {
 
 export async function getCartCount() {
   try {
-    const cookieStore = await cookies()
-    const allCookies = cookieStore.getAll()
-    const hasAuthCookie = allCookies.some(c => c.name.startsWith('sb-') && c.name.endsWith('-auth-token'))
-
-    if (!hasAuthCookie) {
-      const cart = await getGuestCart()
-      return cart.reduce((sum, item) => sum + item.quantity, 0)
-    }
-
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getEffectiveUser()
+    const adminClient = createAdminClient()
 
     if (!user) {
       const cart = await getGuestCart()
       return cart.reduce((sum, item) => sum + item.quantity, 0)
     }
 
-    const { data } = await supabase
+    const { data } = await adminClient
       .from('cart_items')
       .select('quantity')
       .eq('user_id', user.id)

@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { Package, Clock, Truck, CheckCircle2, XCircle, MapPin, MessageCircle, ArrowRight, ShieldCheck } from 'lucide-react'
 
 export const metadata = {
-  title: 'My Orders & Live Tracking | Anisha Spices',
+  title: 'My Orders & Live Tracking | Jaandaar Masale',
 }
 
 export const dynamic = 'force-dynamic'
@@ -33,10 +33,10 @@ function getStepIndex(status: string) {
   }
 }
 
-export default async function AccountOrdersPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+import { getEffectiveUser } from '@/lib/userAuth'
 
+export default async function AccountOrdersPage() {
+  const user = await getEffectiveUser()
   const cookieStore = await cookies()
   const hasAdminCookie = cookieStore.get('admin_session')?.value === 'authenticated'
 
@@ -316,7 +316,7 @@ export default async function AccountOrdersPage() {
 
                     {/* WhatsApp Help / Support Button */}
                     <a
-                      href={`https://wa.me/919999999999?text=${encodeURIComponent(`Hi Anisha Spices, I need an update on my order #${order.order_number}.`)}`}
+                      href={`https://wa.me/919999999999?text=${encodeURIComponent(`Hi Jaandaar Masale, I need an update on my order #${order.order_number}.`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-2xl bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 text-emerald-800 text-xs font-bold transition-colors cursor-pointer"

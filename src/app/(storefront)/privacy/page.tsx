@@ -14,8 +14,8 @@ import {
 } from 'lucide-react'
 
 export const metadata = {
-  title: 'Privacy Policy | Anisha Spices',
-  description: 'Understand how Anisha Spices protects your personal data, address privacy, and payment security.',
+  title: 'Privacy Policy | Jaandaar Masale',
+  description: 'Understand how Jaandaar Masale protects your personal data, address privacy, and payment security.',
 }
 
 export default function PrivacyPolicyPage() {
@@ -41,7 +41,7 @@ export default function PrivacyPolicyPage() {
           </p>
 
           <p className="text-xs text-[#E5AD58] font-semibold pt-1">
-            Last Updated: September 2026 • Anisha Spices (FSSAI Certified)
+            Last Updated: September 2026 • Jaandaar Masale (FSSAI Certified)
           </p>
         </div>
       </div>
@@ -98,7 +98,7 @@ export default function PrivacyPolicyPage() {
               </h2>
             </div>
             <p className="text-sm sm:text-base text-[#5A433B] leading-relaxed pl-11">
-              At <strong>Anisha Spices</strong>, we treat your privacy with the same uncompromising integrity we apply to our authentic cold-ground spices. When you visit our website, place an order, or create an account, you trust us with your personal information. This document outlines exactly what information is collected, how it is handled, and how your rights are protected.
+              At <strong>Jaandaar Masale</strong>, we treat your privacy with the same uncompromising integrity we apply to our authentic cold-ground spices. When you visit our website, place an order, or create an account, you trust us with your personal information. This document outlines exactly what information is collected, how it is handled, and how your rights are protected.
             </p>
           </section>
 
@@ -191,7 +191,7 @@ export default function PrivacyPolicyPage() {
                     <Phone className="w-3.5 h-3.5" /> +91 9540048786
                   </span>
                   <span className="flex items-center gap-1">
-                    <Mail className="w-3.5 h-3.5" /> support@anishaspices.com
+                    <Mail className="w-3.5 h-3.5" /> support@jaandaarmasale.com
                   </span>
                 </div>
               </div>

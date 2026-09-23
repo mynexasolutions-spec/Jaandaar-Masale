@@ -36,17 +36,17 @@ export function Footer() {
           {/* Brand & Mission */}
           <div className="sm:col-span-2 lg:col-span-4 space-y-4 text-center sm:text-left">
             <Link href="/" className="flex items-center justify-center sm:justify-start gap-3">
-              <div className="relative w-11 h-11 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-full overflow-hidden border border-[#D49B4B]/50 flex items-center justify-center shrink-0 shadow-md bg-black">
+              <div className="relative w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-full overflow-hidden border border-[#D49B4B]/50 flex items-center justify-center shrink-0 shadow-md bg-[#FAF6F2]">
                 <Image
                   src="/images/logo.jpeg"
-                  alt="Anisha Spices Logo"
+                  alt="Jaandaar Masale Logo"
                   fill
-                  className="object-cover"
+                  className="object-contain p-0.5"
                   sizes="(max-width: 640px) 44px, 64px"
                 />
               </div>
               <span className="font-serif text-2xl font-bold tracking-tight text-white">
-                Anisha <span className="text-[#D49B4B] text-lg font-sans uppercase tracking-widest">Spices</span>
+                Jaandaar <span className="text-[#D49B4B] text-lg font-sans uppercase tracking-widest">Masale</span>
               </span>
             </Link>
             <p className="text-xs sm:text-sm text-stone-300 leading-relaxed max-w-sm mx-auto sm:mx-0">
@@ -153,7 +153,7 @@ export function Footer() {
         {/* Bottom copyright & legal strip */}
         <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-300 text-center sm:text-left">
           <p className="tracking-wide">
-            &copy; {new Date().getFullYear()} <strong className="text-white font-semibold">Anisha Spices</strong>. All rights reserved.
+            &copy; {new Date().getFullYear()} <strong className="text-white font-semibold">Jaandaar Masale</strong>. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs font-medium">
             <Link 

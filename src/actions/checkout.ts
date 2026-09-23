@@ -35,16 +35,17 @@ export type ShippingAddressInput = {
   country?: string
 }
 
+import { getEffectiveUser } from '@/lib/userAuth'
+
 export async function createOrder(
   addressInput: string | ShippingAddressInput,
   paymentMethod: 'COD' | 'RAZORPAY'
 ) {
   try {
-    const supabase = await createClient()
     const adminClient = createAdminClient()
 
-    // 1. Check user authentication
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Check user authentication via JWT / direct DB session
+    const user = await getEffectiveUser()
 
     // 2. Fetch cart items (works for both authenticated and guest users)
     const cartRes = await getCart()

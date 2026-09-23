@@ -24,9 +24,11 @@ const defaultCategoryItems = [
 
 export function Navbar({
   isLoggedIn = false,
+  user = null,
   categories = [],
 }: {
   isLoggedIn?: boolean
+  user?: { name: string; email: string } | null
   categories?: { name: string; slug: string }[]
 }) {
   const dynamicSubItems = categories.length > 0
@@ -155,15 +157,15 @@ export function Navbar({
 
             {/* Brand Logo (Full Left on Mobile, Left on Desktop) */}
             <div className="flex items-center">
-              <Link href="/" onClick={handleHomeClick} className="group flex items-center" aria-label="Anisha Spices">
+              <Link href="/" onClick={handleHomeClick} className="group flex items-center" aria-label="Jaandaar Masale">
                 {/* Official Brand Logo */}
-                <div className="relative w-12 h-12 sm:w-16 sm:h-16 lg:w-[68px] lg:h-[68px] rounded-full overflow-hidden border border-[#E5AD58]/60 group-hover:scale-105 transition-transform shadow-md shrink-0 bg-black">
+                <div className="relative w-12 h-12 sm:w-16 sm:h-16 lg:w-[68px] lg:h-[68px] rounded-full overflow-hidden border border-[#E5AD58]/60 group-hover:scale-105 transition-transform shadow-md shrink-0 bg-[#FAF6F2]">
                   <Image
                     src="/images/logo.jpeg"
-                    alt="Anisha Spices Logo"
+                    alt="Jaandaar Masale Logo"
                     fill
                     priority
-                    className="object-cover"
+                    className="object-contain p-0.5"
                     sizes="(max-width: 640px) 48px, (max-width: 1024px) 64px, 68px"
                   />
                 </div>
@@ -368,14 +370,29 @@ export function Navbar({
                 </span>
               </Link>
 
-              {/* Account Link (Far Right) */}
-              <Link
-                href={isLoggedIn ? '/account' : '/login'}
-                className="p-2 text-stone-100 hover:text-[#E5AD58] transition-colors rounded-full hover:bg-white/10 hidden lg:block"
-                title={isLoggedIn ? 'Account' : 'Sign In'}
-              >
-                <User className="h-5 w-5" />
-              </Link>
+              {/* Account Link (Far Right: Avatar with First Name when Logged In) */}
+              {isLoggedIn && user ? (
+                <Link
+                  href="/account"
+                  className="flex items-center gap-1.5 py-1 pl-1.5 pr-3 bg-white/10 hover:bg-white/20 border border-[#E5AD58]/60 rounded-full text-white transition-all group shadow-xs hidden lg:flex"
+                  title={`Signed in as ${user.name || user.email}`}
+                >
+                  <div className="w-6 h-6 rounded-full bg-[#E5AD58] text-[#2A1612] font-black text-xs flex items-center justify-center shadow-xs">
+                    {(user.name?.trim() ? user.name.trim().split(' ')[0] : 'U').charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-xs font-bold text-stone-100 group-hover:text-[#E5AD58] max-w-[85px] truncate">
+                    {user.name?.trim() ? user.name.trim().split(' ')[0] : 'Account'}
+                  </span>
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  className="p-2 text-stone-100 hover:text-[#E5AD58] transition-colors rounded-full hover:bg-white/10 hidden lg:block"
+                  title="Sign In"
+                >
+                  <User className="h-5 w-5" />
+                </Link>
+              )}
 
               {/* Mobile Right: Quick Search Button & Hamburger Menu */}
               <div className="flex items-center gap-1 lg:hidden">
@@ -532,16 +549,16 @@ export function Navbar({
               {/* Header */}
               <div className="flex items-center justify-between border-b border-white/15 pb-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="relative w-10 h-10 rounded-full overflow-hidden border border-[#E5AD58]/50 shrink-0 bg-black">
+                  <div className="relative w-10 h-10 rounded-full overflow-hidden border border-[#E5AD58]/50 shrink-0 bg-[#FAF6F2]">
                     <Image
                       src="/images/logo.jpeg"
-                      alt="Anisha Spices Logo"
+                      alt="Jaandaar Masale Logo"
                       fill
-                      className="object-cover"
+                      className="object-contain p-0.5"
                       sizes="40px"
                     />
                   </div>
-                  <span className="font-serif text-lg font-bold text-white">Anisha Spices</span>
+                  <span className="font-serif text-lg font-bold text-white">Jaandaar Masale</span>
                 </div>
                 <button
                   type="button"
@@ -636,8 +653,19 @@ export function Navbar({
               </div>
             </div>
 
-            {/* Bottom CTA Buttons */}
+            {/* Bottom CTA Buttons & User Profile */}
             <div className="mt-8 pt-6 border-t border-white/15 space-y-3">
+              {isLoggedIn && user && (
+                <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/10 border border-white/15 mb-2">
+                  <div className="w-9 h-9 rounded-full bg-[#E5AD58] text-[#2A1612] font-black text-sm flex items-center justify-center shadow-xs shrink-0">
+                    {(user.name?.trim() ? user.name.trim().split(' ')[0] : 'U').charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-white truncate">{user.name || 'Customer'}</p>
+                    <p className="text-[11px] text-stone-300 truncate">{user.email}</p>
+                  </div>
+                </div>
+              )}
               <Link
                 href="/shop"
                 onClick={() => setMobileMenuOpen(false)}
@@ -650,7 +678,7 @@ export function Navbar({
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full block text-center rounded-full border border-white/40 py-2.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
               >
-                {isLoggedIn ? 'My Account' : 'Sign In'}
+                {isLoggedIn ? `My Account (${user?.name?.trim() ? user.name.trim().split(' ')[0] : 'Profile'})` : 'Sign In'}
               </Link>
             </div>
           </div>

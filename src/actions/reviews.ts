@@ -1,6 +1,7 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getEffectiveUser } from '@/lib/userAuth'
 import { revalidatePath } from 'next/cache'
 
 export type ActionResult = {
@@ -13,10 +14,8 @@ export async function submitReview(
   formData: FormData
 ): Promise<ActionResult> {
   try {
-    const supabase = await createClient()
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const user = await getEffectiveUser()
+    if (!user) {
       return { error: 'You must be logged in to submit a review.' }
     }
 
@@ -32,7 +31,9 @@ export async function submitReview(
       return { error: 'Please select a valid rating between 1 and 5.' }
     }
 
-    const { error: insertError } = await supabase
+    const adminClient = createAdminClient()
+
+    const { error: insertError } = await adminClient
       .from('reviews')
       .insert({
         product_id: productId,

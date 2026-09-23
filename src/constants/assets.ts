@@ -1,6 +1,6 @@
-// Centralized Asset Registry for Anisha Masale
+// Centralized Asset Registry for Jaandaar Masale
 export const BRAND_CONFIG = {
-  name: 'Anisha Masale',
+  name: 'Jaandaar Masale',
   tagline: 'Pure Spice. Real Taste. Trusted Every Time.',
   subline: 'Pure, Natural & Full of Flavor',
 }

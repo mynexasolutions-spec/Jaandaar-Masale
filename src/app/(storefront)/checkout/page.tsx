@@ -5,7 +5,7 @@ import { getShippingConfig } from '@/actions/shipping'
 import { CheckoutClient } from './_components/CheckoutClient'
 
 export const metadata = {
-  title: 'Checkout | Anisha Spices',
+  title: 'Checkout | Jaandaar Masale',
 }
 
 export const dynamic = 'force-dynamic'

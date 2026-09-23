@@ -5,7 +5,7 @@ import { createCategory, updateCategory, type ActionResult } from '@/actions/cat
 import Link from 'next/link'
 import Image from 'next/image'
 import { Save, ArrowLeft, Image as ImageIcon, Loader2, X } from 'lucide-react'
-import { CldUploadWidget } from 'next-cloudinary'
+import { ImageKitUpload } from '@/components/admin/ImageKitUpload'
 import type { Category } from '@/types/database'
 
 interface CategoryFormProps {
@@ -103,28 +103,21 @@ export default function CategoryForm({ category }: CategoryFormProps) {
               </button>
             </div>
           ) : (
-            <CldUploadWidget 
-              signatureEndpoint="/api/cloudinary/sign"
-              options={{
-                maxFiles: 1,
-                resourceType: "image",
-                clientAllowedFormats: ["jpg", "jpeg", "png", "webp"]
+            <ImageKitUpload
+              folder="/categories"
+              multiple={false}
+              onSuccess={(result) => {
+                setImageUrl(result.url)
               }}
-              onSuccess={(result: any) => {
-                setImageUrl(result.info.secure_url)
-                setIsUploading(false)
-              }}
-              onOpen={() => setIsUploading(true)}
-              onError={() => setIsUploading(false)}
             >
-              {({ open }) => (
+              {({ open, isUploading: uploading }) => (
                 <button
                   type="button"
-                  onClick={() => open()}
-                  disabled={isUploading || pending}
-                  className="w-full max-w-sm aspect-video flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100 hover:border-orange-400 hover:text-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={open}
+                  disabled={uploading || pending}
+                  className="w-full max-w-sm aspect-video flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100 hover:border-orange-400 hover:text-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
-                  {isUploading ? (
+                  {uploading ? (
                     <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
                   ) : (
                     <ImageIcon className="w-6 h-6" />
@@ -132,7 +125,7 @@ export default function CategoryForm({ category }: CategoryFormProps) {
                   <span className="text-sm font-medium">Click to upload an image</span>
                 </button>
               )}
-            </CldUploadWidget>
+            </ImageKitUpload>
           )}
         </div>
 

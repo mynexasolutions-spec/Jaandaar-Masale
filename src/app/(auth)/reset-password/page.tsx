@@ -77,7 +77,7 @@ function ResetPasswordForm() {
             </svg>
           </div>
           <span className="font-serif text-2xl font-bold tracking-tight text-[#7B111A]">
-            Anisha Spices
+            Jaandaar Masale
           </span>
         </Link>
 

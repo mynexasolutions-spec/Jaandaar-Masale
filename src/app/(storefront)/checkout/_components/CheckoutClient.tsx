@@ -269,7 +269,7 @@ export function CheckoutClient({
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
           amount: result.amount,
           currency: 'INR',
-          name: 'Anisha Spices',
+          name: 'Jaandaar Masale',
           description: 'Pure Spices Order',
           order_id: result.razorpayOrderId,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

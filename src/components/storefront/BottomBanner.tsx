@@ -33,7 +33,7 @@ export function BottomBanner() {
             </h2>
 
             <p className="text-xs sm:text-base text-stone-200/95 leading-relaxed font-normal max-w-md drop-shadow-sm">
-              Cook healthier, live better with Anisha Spices.
+              Cook healthier, live better with Jaandaar Masale.
             </p>
 
             <div className="pt-1 sm:pt-2">

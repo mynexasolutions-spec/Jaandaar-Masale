@@ -8,9 +8,9 @@ import { BottomBanner } from '@/components/storefront/BottomBanner'
 import { SPICE_ASSETS } from '@/constants/assets'
 
 export const metadata = {
-  title: 'Anisha Spices — Pure Spice. Real Taste. Trusted Every Time.',
+  title: 'Jaandaar Masale — Pure Spice. Real Taste. Trusted Every Time.',
   description:
-    'Anisha Spices brings the richness of India\'s finest spices to your kitchen. Pure, natural & full of flavor.',
+    'Jaandaar Masale brings the richness of India\'s finest spices to your kitchen. Pure, natural & full of flavor.',
 }
 
 export const dynamic = 'force-dynamic'

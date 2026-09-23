@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Sign In | Anisha Spices',
-  description: 'Sign in or create an account with Anisha Spices.',
+  title: 'Sign In | Jaandaar Masale',
+  description: 'Sign in or create an account with Jaandaar Masale.',
 }
 
 export default function AuthLayout({

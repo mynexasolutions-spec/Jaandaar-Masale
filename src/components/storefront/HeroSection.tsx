@@ -1,103 +1,108 @@
-import Link from 'next/link'
-import { ArrowRight, Leaf, ShieldCheck, Sparkles } from 'lucide-react'
 import { getHeroSlides } from '@/actions/admin/hero'
-import { HeroBackgroundSlider } from '@/components/storefront/HeroBackgroundSlider'
+import { HeroBackgroundSlider, HeroSlideItem, GlobalHeroText } from '@/components/storefront/HeroBackgroundSlider'
 
 export const dynamic = 'force-dynamic'
 
+const DEFAULT_HERO_SLIDES: HeroSlideItem[] = [
+  {
+    id: 'default-turmeric',
+    image_url: '/images/turmeric-powder.jpeg',
+    tag: '✦ 100% Pure Salem Turmeric',
+    title: 'Golden Purity. Natural Healing. Rich Curcumin.',
+    subtitle: 'Handpicked Salem & Alleppey turmeric roots, cold-ground to preserve natural essential oils and authentic golden warmth.',
+    button_text: 'Shop Turmeric Powder',
+    button_link: '/product/turmeric-powder',
+    text_mode: 'per_slide',
+    is_active: true,
+  },
+  {
+    id: 'default-red-chilly',
+    image_url: '/images/red-chilly-powder.jpeg',
+    tag: '✦ Vibrant Kashmiri & Guntur Blend',
+    title: 'Authentic Fiery Aroma & Rich Natural Color',
+    subtitle: 'Sun-dried whole red chillies ground without artificial colors or seed fillers for appetizing heat and vibrant color.',
+    button_text: 'Shop Red Chilly',
+    button_link: '/product/red-chilly-powder',
+    text_mode: 'per_slide',
+    is_active: true,
+  },
+  {
+    id: 'default-garam-masala',
+    image_url: '/images/garam-masala.jpeg',
+    tag: '✦ Master Royal Heritage Blend',
+    title: 'Master Crafted Royal Garam Masala',
+    subtitle: 'An heirloom recipe of slow-roasted whole spices formulated to transform everyday curries into royal culinary feasts.',
+    button_text: 'Shop Garam Masala',
+    button_link: '/product/garam-masala',
+    text_mode: 'per_slide',
+    is_active: true,
+  },
+  {
+    id: 'default-coriander',
+    image_url: '/images/coriander-powder.jpeg',
+    tag: '✦ Plump Green Rajasthan Seeds',
+    title: 'Freshly Ground Coriander (Dhaniya)',
+    subtitle: 'Selected roasted whole coriander seeds gently ground to lock in fresh citrusy aroma and natural essential oils.',
+    button_text: 'Shop Coriander',
+    button_link: '/product/coriander-powder',
+    text_mode: 'per_slide',
+    is_active: true,
+  },
+  {
+    id: 'default-cumin',
+    image_url: '/images/cumin-powder.jpeg',
+    tag: '✦ Gujarat Sun-Dried Cumin',
+    title: 'Aromatic Cumin (Jeera) Powder',
+    subtitle: 'Premium Gujarat cumin seeds sun-dried and perfectly roasted for rich warm earthy aroma in every single pinch.',
+    button_text: 'Shop Cumin',
+    button_link: '/product/cumin-powder',
+    text_mode: 'per_slide',
+    is_active: true,
+  },
+]
+
 export async function HeroSection() {
-  let heroData = null
-  let activeSlides: any[] = []
+  let activeSlides: HeroSlideItem[] = []
+  let textMode: 'global' | 'per_slide' = 'per_slide'
+  let globalText: GlobalHeroText = {
+    title: 'Pure Spice. Real Taste. Trusted Every Time.',
+    subtitle: "Jaandaar Masale brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor.",
+    button_text: 'Shop Now',
+    button_link: '/shop',
+  }
 
   try {
     const slides = await getHeroSlides()
-    // Strictly filter ONLY active slides
-    activeSlides = slides.filter((s: any) => s.is_active)
-    if (activeSlides.length > 0) {
-      heroData = activeSlides[0]
+
+    if (slides && slides.length > 0) {
+      if (slides[0].text_mode) {
+        textMode = slides[0].text_mode
+      }
+
+      const filtered = slides.filter((s: any) => s.is_active)
+      if (filtered.length > 0) {
+        activeSlides = filtered
+        if (filtered[0].title) globalText.title = filtered[0].title
+        if (filtered[0].subtitle) globalText.subtitle = filtered[0].subtitle
+        if (filtered[0].button_text) globalText.button_text = filtered[0].button_text
+        if (filtered[0].button_link) globalText.button_link = filtered[0].button_link
+      }
     }
-  } catch {
-    // Graceful fallback
+  } catch (error) {
+    console.error('Error fetching hero slides, falling back to defaults:', error)
   }
 
-  const title = heroData?.title || 'Pure Spice. Real Taste. Trusted Every Time.'
-  const subtitle =
-    heroData?.subtitle ||
-    "Anisha Spices brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor."
-  const buttonText = heroData?.button_text || 'Shop Now'
-  const buttonLink = heroData?.button_link || '/shop'
+  // If no active slides from database, use rich default curated slides
+  if (activeSlides.length === 0) {
+    activeSlides = DEFAULT_HERO_SLIDES
+    textMode = 'per_slide'
+  }
 
   return (
-    <section className="relative overflow-hidden bg-[#F8ECE7] min-h-[520px] sm:min-h-[640px] lg:min-h-[720px] flex items-center">
-      
-      {/* Dynamic Background Slider (Renders ONLY active slides, nothing if 0 active slides) */}
-      <HeroBackgroundSlider slides={activeSlides} />
-
-      {/* Content Container */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 w-full pt-8 pb-14 sm:py-16 lg:py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-12 items-center">
-          
-          {/* Left Column: Headlines, Subtitle, Action Buttons, Trust Badges */}
-          <div className="lg:col-span-7 xl:col-span-6 space-y-5 sm:space-y-7">
-            
-            {/* Main Headline */}
-            <h1 className="font-serif text-3xl xs:text-4xl sm:text-5xl lg:text-[54px] xl:text-[58px] font-bold tracking-tight text-[#2A1612] leading-[1.15]">
-              {title}
-            </h1>
-
-            {/* Subtitle */}
-            <p className="text-sm sm:text-base lg:text-lg text-[#5A433B] max-w-lg leading-relaxed font-normal">
-              {subtitle}
-            </p>
-
-            {/* CTA Buttons - Side by Side on all screen sizes */}
-            <div className="flex flex-row items-center gap-2.5 sm:gap-4 pt-1">
-              <Link
-                href={buttonLink}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-[#7B111A] px-4 sm:px-8 py-2.5 sm:py-3.5 text-xs sm:text-base font-semibold text-white shadow-md shadow-[#7B111A]/25 hover:bg-[#520C12] hover:shadow-lg transition-all transform hover:-translate-y-0.5 text-center whitespace-nowrap cursor-pointer"
-              >
-                <span>{buttonText}</span>
-                <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </Link>
-              <Link
-                href="/about"
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center rounded-full border border-[#B3927D] bg-white/70 backdrop-blur-sm px-4 sm:px-8 py-2.5 sm:py-3.5 text-xs sm:text-base font-semibold text-[#2A1612] hover:bg-[#F2E8DC] hover:border-[#7B111A] transition-all text-center whitespace-nowrap cursor-pointer"
-              >
-                Our Story
-              </Link>
-            </div>
-
-            {/* 3 Trust Badges with delicate line-art */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-6 pt-3 sm:pt-4 max-w-lg">
-              <div className="flex flex-col items-center sm:items-start text-center sm:text-left gap-1 sm:gap-1.5 group">
-                <div className="p-1.5 sm:p-2 rounded-full bg-[#7B111A]/10 text-[#7B111A] group-hover:scale-110 transition-transform">
-                  <Leaf className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </div>
-                <span className="text-[11px] sm:text-sm font-semibold text-[#2A1612] leading-tight">100% Natural</span>
-              </div>
-
-              <div className="flex flex-col items-center sm:items-start text-center sm:text-left gap-1 sm:gap-1.5 group">
-                <div className="p-1.5 sm:p-2 rounded-full bg-[#7B111A]/10 text-[#7B111A] group-hover:scale-110 transition-transform">
-                  <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </div>
-                <span className="text-[11px] sm:text-sm font-semibold text-[#2A1612] leading-tight">No Preservatives</span>
-              </div>
-
-              <div className="flex flex-col items-center sm:items-start text-center sm:text-left gap-1 sm:gap-1.5 group">
-                <div className="p-1.5 sm:p-2 rounded-full bg-[#7B111A]/10 text-[#7B111A] group-hover:scale-110 transition-transform">
-                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </div>
-                <span className="text-[11px] sm:text-sm font-semibold text-[#2A1612] leading-tight">Premium Quality</span>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Right Column spacer to let background pouch and splash shine through */}
-          <div className="hidden lg:block lg:col-span-5 xl:col-span-6 min-h-[300px]" />
-
-        </div>
-      </div>
-    </section>
+    <HeroBackgroundSlider
+      slides={activeSlides}
+      textMode={textMode}
+      globalText={globalText}
+    />
   )
 }

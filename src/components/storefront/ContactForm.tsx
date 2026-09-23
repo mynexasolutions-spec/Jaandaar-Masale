@@ -37,7 +37,7 @@ export function ContactForm() {
         </div>
         <h3 className="font-serif text-2xl font-bold text-[#2A1612] mb-2">Message Sent Successfully!</h3>
         <p className="text-sm text-[#5A433B] max-w-md leading-relaxed">
-          Thank you for reaching out to Anisha Spices. Our spice care team has received your message and will respond within 24 hours.
+          Thank you for reaching out to Jaandaar Masale. Our spice care team has received your message and will respond within 24 hours.
         </p>
         <button
           onClick={() => setSuccess(false)}

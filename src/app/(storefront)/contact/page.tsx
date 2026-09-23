@@ -2,8 +2,8 @@ import { Mail, Phone, MapPin, Clock, MessageSquare, PackageCheck, Truck, ShieldC
 import { ContactForm } from '@/components/storefront/ContactForm'
 
 export const metadata = {
-  title: 'Contact Us — We Are Here To Help | Anisha Spices',
-  description: 'Get in touch with the Anisha Spices customer care team for product queries, wholesale & bulk orders, or shipping assistance.',
+  title: 'Contact Us — We Are Here To Help | Jaandaar Masale',
+  description: 'Get in touch with the Jaandaar Masale customer care team for product queries, wholesale & bulk orders, or shipping assistance.',
 }
 
 export default function ContactPage() {
@@ -24,9 +24,9 @@ export default function ContactPage() {
     },
     {
       title: 'Email Inquiries',
-      desc: 'info@anishamasala.com (We respond within 24 business hours)',
+      desc: 'info@jaandaarmasale.com (We respond within 24 business hours)',
       actionText: 'Send an Email',
-      actionHref: 'mailto:info@anishamasala.com',
+      actionHref: 'mailto:info@jaandaarmasale.com',
       icon: <Mail className="w-5 h-5" />,
     },
     {

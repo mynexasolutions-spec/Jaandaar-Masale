@@ -19,13 +19,13 @@ export async function sendBrevoEmail({
 }: SendEmailPayload): Promise<{ success: boolean; messageId?: string; error?: string; simulated?: boolean }> {
   const apiKey = process.env.BREVO_API_KEY?.trim()
   let senderEmail = process.env.BREVO_SENDER_EMAIL?.trim() || ''
-  let senderName = process.env.BREVO_SENDER_NAME?.trim() || 'Anisha Masale'
+  let senderName = process.env.BREVO_SENDER_NAME?.trim() || 'Jaandaar Masale'
 
   // Clean sender email if formatted as "Name <email@domain.com>"
   const angleMatch = senderEmail.match(/<([^>]+)>/)
   if (angleMatch) {
     const extractedName = senderEmail.replace(/<[^>]+>/, '').trim()
-    if (extractedName && (!process.env.BREVO_SENDER_NAME || process.env.BREVO_SENDER_NAME === 'Anisha Masale')) {
+    if (extractedName && (!process.env.BREVO_SENDER_NAME || process.env.BREVO_SENDER_NAME === 'Jaandaar Masale')) {
       senderName = extractedName
     }
     senderEmail = angleMatch[1].trim()
@@ -101,7 +101,7 @@ export async function sendSignupOtpEmail({
   name: string
   otp: string
 }) {
-  const subject = `Your Anisha Masale Verification Code: ${otp}`
+  const subject = `Your Jaandaar Masale Verification Code: ${otp}`
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -120,7 +120,7 @@ export async function sendSignupOtpEmail({
           <tr>
             <td style="background: linear-gradient(135deg, #7B111A 0%, #4D0910 100%); padding: 32px 24px; text-align: center;">
               <div style="font-size: 26px; font-weight: 800; color: #FFFFFF; letter-spacing: 2px; text-transform: uppercase;">
-                ANISHA MASALE
+                JAANDAAR MASALE
               </div>
               <div style="font-size: 11px; color: #D4AF37; letter-spacing: 3px; margin-top: 4px; text-transform: uppercase; font-weight: 600;">
                 Pure Spices · Royal Heritage
@@ -138,7 +138,7 @@ export async function sendSignupOtpEmail({
                 Namaste <strong>${name || 'Customer'}</strong>,
               </p>
               <p style="margin: 0 0 24px 0; font-size: 14px; line-height: 1.6; color: #6E5951;">
-                Thank you for choosing Anisha Masale. Please enter the following 6-digit verification code to complete your registration and activate your account:
+                Thank you for choosing Jaandaar Masale. Please enter the following 6-digit verification code to complete your registration and activate your account:
               </p>
 
               <!-- OTP Code Display Card -->
@@ -164,10 +164,10 @@ export async function sendSignupOtpEmail({
           <tr>
             <td style="background-color: #FAF6F2; border-top: 1px solid #E8DFD5; padding: 24px 32px; text-align: center;">
               <div style="font-size: 12px; font-weight: 600; color: #6E5951;">
-                Anisha Masale · Handcrafted Indian Spices
+                Jaandaar Masale · Handcrafted Indian Spices
               </div>
               <div style="font-size: 11px; color: #A68B7C; margin-top: 6px;">
-                © ${new Date().getFullYear()} Anisha Masale. All rights reserved.
+                © ${new Date().getFullYear()} Jaandaar Masale. All rights reserved.
               </div>
             </td>
           </tr>
@@ -199,7 +199,7 @@ export async function sendPasswordResetEmail({
   name?: string
   resetUrl: string
 }) {
-  const subject = 'Reset Your Anisha Masale Password'
+  const subject = 'Reset Your Jaandaar Masale Password'
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -218,7 +218,7 @@ export async function sendPasswordResetEmail({
           <tr>
             <td style="background: linear-gradient(135deg, #7B111A 0%, #4D0910 100%); padding: 32px 24px; text-align: center;">
               <div style="font-size: 26px; font-weight: 800; color: #FFFFFF; letter-spacing: 2px; text-transform: uppercase;">
-                ANISHA MASALE
+                JAANDAAR MASALE
               </div>
               <div style="font-size: 11px; color: #D4AF37; letter-spacing: 3px; margin-top: 4px; text-transform: uppercase; font-weight: 600;">
                 Pure Spices · Royal Heritage
@@ -236,7 +236,7 @@ export async function sendPasswordResetEmail({
                 Namaste <strong>${name || 'Customer'}</strong>,
               </p>
               <p style="margin: 0 0 24px 0; font-size: 14px; line-height: 1.6; color: #6E5951;">
-                We received a request to reset your Anisha Masale account password. Click the button below to choose a new password:
+                We received a request to reset your Jaandaar Masale account password. Click the button below to choose a new password:
               </p>
 
               <!-- CTA Button -->
@@ -267,10 +267,10 @@ export async function sendPasswordResetEmail({
           <tr>
             <td style="background-color: #FAF6F2; border-top: 1px solid #E8DFD5; padding: 24px 32px; text-align: center;">
               <div style="font-size: 12px; font-weight: 600; color: #6E5951;">
-                Anisha Masale · Handcrafted Indian Spices
+                Jaandaar Masale · Handcrafted Indian Spices
               </div>
               <div style="font-size: 11px; color: #A68B7C; margin-top: 6px;">
-                © ${new Date().getFullYear()} Anisha Masale. All rights reserved.
+                © ${new Date().getFullYear()} Jaandaar Masale. All rights reserved.
               </div>
             </td>
           </tr>
@@ -325,7 +325,7 @@ export type OrderEmailData = {
 
 export async function sendOrderConfirmationEmail(data: OrderEmailData) {
   const isPaidOnline = data.paymentStatus === 'paid'
-  const subject = `Order Confirmed: #${data.orderNumber} - Anisha Masale`
+  const subject = `Order Confirmed: #${data.orderNumber} - Jaandaar Masale`
   const formattedDate = data.orderDate || new Date().toLocaleDateString('en-IN', {
     day: 'numeric',
     month: 'short',
@@ -385,7 +385,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
           <tr>
             <td style="background: linear-gradient(135deg, #7B111A 0%, #4D0910 100%); padding: 30px 24px; text-align: center;">
               <div style="font-size: 26px; font-weight: 800; color: #FFFFFF; letter-spacing: 2.5px; text-transform: uppercase;">
-                ANISHA MASALE
+                JAANDAAR MASALE
               </div>
               <div style="font-size: 11px; color: #D4AF37; letter-spacing: 3px; margin-top: 4px; text-transform: uppercase; font-weight: 600;">
                 Pure Spices · Royal Heritage
@@ -495,7 +495,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
               <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #FFF9F2; border-left: 4px solid #C89B65; border-radius: 6px; padding: 12px 16px;">
                 <tr>
                   <td style="font-size: 12px; line-height: 1.5; color: #6E5951;">
-                    🌿 <strong>Artisanal Assurance:</strong> All Anisha Masale batches are freshly ground from handpicked whole spices, zero preservatives, and sealed in airtight aroma-lock packaging. Your package will be dispatched within 24–48 hours.
+                    🌿 <strong>Artisanal Assurance:</strong> All Jaandaar Masale batches are freshly ground from handpicked whole spices, zero preservatives, and sealed in airtight aroma-lock packaging. Your package will be dispatched within 24–48 hours.
                   </td>
                 </tr>
               </table>
@@ -506,13 +506,13 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
           <tr>
             <td style="background-color: #FAF6F2; border-top: 1px solid #E8DFD5; padding: 24px 28px; text-align: center;">
               <div style="font-size: 12px; font-weight: 600; color: #6E5951;">
-                Anisha Masale · Handcrafted Indian Spices
+                Jaandaar Masale · Handcrafted Indian Spices
               </div>
               <div style="font-size: 11px; color: #8C7567; margin-top: 4px;">
                 Questions about your order? Reach us at <a href="mailto:${supportEmail}" style="color: #7B111A; text-decoration: underline;">${supportEmail}</a>
               </div>
               <div style="font-size: 10px; color: #A68B7C; margin-top: 8px;">
-                © ${new Date().getFullYear()} Anisha Masale. All rights reserved.
+                © ${new Date().getFullYear()} Jaandaar Masale. All rights reserved.
               </div>
             </td>
           </tr>

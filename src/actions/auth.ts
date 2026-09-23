@@ -1,7 +1,8 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
+import { hashPassword, verifyPassword, setUserSession, clearUserSession, getAuthUser, AuthUser } from '@/lib/userAuth'
 import { sendSignupOtpEmail, sendPasswordResetEmail } from '@/lib/brevo'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
@@ -11,30 +12,6 @@ import crypto from 'crypto'
 export type AuthResult = {
   error?: string
   success?: boolean
-}
-
-// -------------------------------------------------------------
-// Security Helpers: AES-256 Encryption for Temporary Signup Storage
-// -------------------------------------------------------------
-const ENCRYPTION_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || 'anisha-spices-secure-secret-key-32').slice(0, 32).padEnd(32, '0')
-const IV_LENGTH = 16
-
-function encryptPassword(text: string): string {
-  const iv = crypto.randomBytes(IV_LENGTH)
-  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv)
-  let encrypted = cipher.update(text)
-  encrypted = Buffer.concat([encrypted, cipher.final()])
-  return iv.toString('hex') + ':' + encrypted.toString('hex')
-}
-
-function decryptPassword(text: string): string {
-  const textParts = text.split(':')
-  const iv = Buffer.from(textParts.shift()!, 'hex')
-  const encryptedText = Buffer.from(textParts.join(':'), 'hex')
-  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv)
-  let decrypted = decipher.update(encryptedText)
-  decrypted = Buffer.concat([decrypted, decipher.final()])
-  return decrypted.toString()
 }
 
 // -------------------------------------------------------------
@@ -49,23 +26,23 @@ async function mergeGuestCart(userId: string) {
     const guestCart = JSON.parse(guestCartCookie.value) as { variant_id: string; quantity: number }[]
     if (!guestCart || guestCart.length === 0) return
 
-    const supabase = await createClient()
+    const adminClient = createAdminClient()
 
     for (const item of guestCart) {
-      const { data: existing } = await supabase
+      const { data: existing } = await adminClient
         .from('cart_items')
         .select('id, quantity')
         .eq('user_id', userId)
         .eq('variant_id', item.variant_id)
-        .single()
+        .maybeSingle()
 
       if (existing) {
-        await supabase
+        await adminClient
           .from('cart_items')
           .update({ quantity: existing.quantity + item.quantity })
           .eq('id', existing.id)
       } else {
-        await supabase
+        await adminClient
           .from('cart_items')
           .insert([{ user_id: userId, variant_id: item.variant_id, quantity: item.quantity }])
       }
@@ -79,7 +56,188 @@ async function mergeGuestCart(userId: string) {
 }
 
 // =============================================================
-// 1. SIGN UP FLOW (Step A: Request Verification OTP via Brevo)
+// 1. DIRECT DATABASE REGISTRATION (Instant Signup in DB)
+// =============================================================
+export async function customerDirectRegister(
+  _prevState: AuthResult,
+  formData: FormData
+): Promise<AuthResult> {
+  const fullName = (formData.get('full_name') as string)?.trim()
+  const email = (formData.get('email') as string)?.trim().toLowerCase()
+  const password = formData.get('password') as string
+  const redirectTo = (formData.get('redirectTo') as string) || '/'
+
+  if (!fullName || !email || !password) {
+    return { error: 'Full name, email and password are all required.' }
+  }
+
+  if (fullName.length < 2) {
+    return { error: 'Please enter a valid full name (at least 2 characters).' }
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email)) {
+    return { error: 'Please provide a valid email address.' }
+  }
+
+  if (password.length < 6) {
+    return { error: 'Password must be at least 6 characters long.' }
+  }
+
+  const adminClient = createAdminClient()
+
+  // 1. Check if user already exists in `users` table or `profiles` table
+  const { data: existingUser } = await adminClient
+    .from('users')
+    .select('id, email')
+    .ilike('email', email)
+    .maybeSingle()
+
+  if (existingUser) {
+    return { error: 'An account with this email already exists. Please sign in.' }
+  }
+
+  const { data: existingProfile } = await adminClient
+    .from('profiles')
+    .select('id, email')
+    .ilike('email', email)
+    .maybeSingle()
+
+  if (existingProfile) {
+    return { error: 'An account with this email already exists. Please sign in.' }
+  }
+
+  // 2. Hash password securely
+  const passwordHash = hashPassword(password)
+  const userId = crypto.randomUUID()
+
+  // 3. Insert into `users` table
+  let insertSuccess = false
+  const { error: userInsertError } = await adminClient.from('users').insert([
+    {
+      id: userId,
+      full_name: fullName,
+      email,
+      password_hash: passwordHash,
+      role: 'customer',
+      phone: '',
+      is_active: true,
+    },
+  ])
+
+  if (!userInsertError) {
+    insertSuccess = true
+  }
+
+  // Also sync to `profiles` table
+  await adminClient.from('profiles').upsert([
+    {
+      id: userId,
+      full_name: fullName,
+      email,
+      password_hash: passwordHash,
+      role: 'customer',
+      phone: '',
+      is_active: true,
+    },
+  ])
+
+  if (!insertSuccess && userInsertError) {
+    console.error('Failed to insert into users table:', userInsertError)
+    // If table `users` hasn't been created yet, profile table was upserted above
+  }
+
+  // 4. Set direct session cookie
+  const authUser: AuthUser = {
+    id: userId,
+    email,
+    full_name: fullName,
+    role: 'customer',
+  }
+
+  await setUserSession(authUser)
+  await mergeGuestCart(userId)
+
+  revalidatePath('/', 'layout')
+  redirect(redirectTo)
+}
+
+// =============================================================
+// 2. DIRECT DATABASE LOGIN (Email + Password against DB Table)
+// =============================================================
+export async function customerPasswordLogin(
+  _prevState: AuthResult,
+  formData: FormData
+): Promise<AuthResult> {
+  const email = (formData.get('email') as string)?.trim().toLowerCase()
+  const password = formData.get('password') as string
+  const redirectTo = (formData.get('redirectTo') as string) || '/'
+
+  if (!email || !password) {
+    return { error: 'Email and password are required.' }
+  }
+
+  const adminClient = createAdminClient()
+
+  // 1. Look up user in `users` table
+  let foundUser: any = null
+  const { data: userRecord } = await adminClient
+    .from('users')
+    .select('id, full_name, email, password_hash, role, is_active')
+    .ilike('email', email)
+    .maybeSingle()
+
+  if (userRecord) {
+    foundUser = userRecord
+  } else {
+    // Fallback: check `profiles` table
+    const { data: profileRecord } = await adminClient
+      .from('profiles')
+      .select('id, full_name, email, password_hash, role, is_active')
+      .ilike('email', email)
+      .maybeSingle()
+
+    if (profileRecord) {
+      foundUser = profileRecord
+    }
+  }
+
+  // 2. If user not found in DB
+  if (!foundUser) {
+    return { error: 'No account found with this email address. Please register.' }
+  }
+
+  if (foundUser.is_active === false) {
+    return { error: 'This account has been deactivated. Please contact support.' }
+  }
+
+  // 3. Verify password
+  let isValidPassword = false
+  if (foundUser.password_hash) {
+    isValidPassword = verifyPassword(password, foundUser.password_hash)
+  }
+
+  if (!isValidPassword) {
+    return { error: 'Incorrect password. Please try again.' }
+  }
+
+  // 4. Set direct session cookie
+  const authUser: AuthUser = {
+    id: foundUser.id,
+    email: foundUser.email,
+    full_name: foundUser.full_name || 'Customer',
+    role: foundUser.role || 'customer',
+  }
+
+  await setUserSession(authUser)
+  await mergeGuestCart(foundUser.id)
+
+  revalidatePath('/', 'layout')
+  redirect(redirectTo)
+}
+
+// =============================================================
+// 3. SIGN UP FLOW WITH OTP (Brevo Verification Option)
 // =============================================================
 export async function requestSignupOtp(
   _prevState: AuthResult,
@@ -108,41 +266,36 @@ export async function requestSignupOtp(
 
   const adminClient = createAdminClient()
 
-  // Check if an active account already exists with this email
-  const { data: existingProfile } = await adminClient
-    .from('profiles')
+  // Check if account already exists
+  const { data: existingUser } = await adminClient
+    .from('users')
     .select('id')
     .ilike('email', email)
     .maybeSingle()
 
-  if (existingProfile) {
+  if (existingUser) {
     return { error: 'An account with this email already exists. Please sign in.' }
   }
 
   // Generate 6-digit numeric OTP
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString()
-  const encrypted = encryptPassword(password)
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutes
+  const passwordHash = hashPassword(password)
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString()
 
-  // Clean up any stale unverified requests for this email
+  // Clean up old OTP records
   await adminClient.from('auth_signup_otps').delete().ilike('email', email)
 
   // Insert temporary record
-  const { error: insertError } = await adminClient.from('auth_signup_otps').insert([
+  await adminClient.from('auth_signup_otps').insert([
     {
       email,
       full_name: fullName,
-      encrypted_password: encrypted,
+      encrypted_password: passwordHash,
       otp_code: otpCode,
       expires_at: expiresAt,
       verified: false,
     },
   ])
-
-  if (insertError) {
-    console.error('Failed to save signup OTP record:', insertError)
-    return { error: 'Could not initiate registration. Please try again.' }
-  }
 
   // Dispatch OTP email via Brevo
   const emailRes = await sendSignupOtpEmail({
@@ -158,9 +311,6 @@ export async function requestSignupOtp(
   return { success: true }
 }
 
-// =============================================================
-// 1. SIGN UP FLOW (Step B: Verify OTP & Create Account)
-// =============================================================
 export async function verifySignupOtp(
   _prevState: AuthResult,
   formData: FormData
@@ -196,7 +346,6 @@ export async function verifySignupOtp(
 
   // Check code match
   if (record.otp_code !== token) {
-    // Increment attempts
     await adminClient
       .from('auth_signup_otps')
       .update({ attempts: (record.attempts || 0) + 1 })
@@ -205,124 +354,54 @@ export async function verifySignupOtp(
     return { error: 'Invalid verification code. Please enter the 6-digit code sent to your email.' }
   }
 
-  // Decrypt password
-  let plainPassword = ''
-  try {
-    plainPassword = decryptPassword(record.encrypted_password)
-  } catch (err) {
-    console.error('Password decryption error:', err)
-    return { error: 'An error occurred during account verification. Please try again.' }
-  }
+  // Store user in direct `users` table
+  const userId = crypto.randomUUID()
+  const passwordHash = record.encrypted_password
 
-  // Create or update user in Supabase Auth (Pre-confirmed email, bypasses all Supabase email rate limits)
-  let targetUserId = ''
-  const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
-    email: record.email,
-    password: plainPassword,
-    email_confirm: true,
-    user_metadata: {
-      full_name: record.full_name,
-      role: 'customer',
-    },
-  })
-
-  if (createError) {
-    if (createError.message?.toLowerCase().includes('already been registered')) {
-      const { data: existingUsers } = await adminClient.auth.admin.listUsers()
-      const existingUser = existingUsers?.users?.find(
-        (u) => u.email?.toLowerCase() === record.email.toLowerCase()
-      )
-      if (existingUser) {
-        targetUserId = existingUser.id
-        await adminClient.auth.admin.updateUserById(targetUserId, {
-          password: plainPassword,
-          email_confirm: true,
-          user_metadata: {
-            full_name: record.full_name,
-            role: 'customer',
-          },
-        })
-      } else {
-        return { error: createError.message }
-      }
-    } else {
-      console.error('User creation failed:', createError)
-      return { error: createError?.message || 'Failed to create user account.' }
-    }
-  } else {
-    targetUserId = newUser.user.id
-  }
-
-  // Ensure customer profile is recorded in public.profiles
-  await adminClient.from('profiles').upsert([
+  await adminClient.from('users').insert([
     {
-      id: targetUserId,
-      email: record.email,
+      id: userId,
       full_name: record.full_name,
+      email: record.email,
+      password_hash: passwordHash,
       role: 'customer',
       phone: '',
       is_active: true,
     },
   ])
 
-  // Remove used OTP record
+  await adminClient.from('profiles').upsert([
+    {
+      id: userId,
+      full_name: record.full_name,
+      email: record.email,
+      password_hash: passwordHash,
+      role: 'customer',
+      phone: '',
+      is_active: true,
+    },
+  ])
+
+  // Clean OTP record
   await adminClient.from('auth_signup_otps').delete().eq('id', record.id)
 
-  // Sign in customer immediately
-  const supabase = await createClient()
-  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+  // Direct Session Login
+  const authUser: AuthUser = {
+    id: userId,
     email: record.email,
-    password: plainPassword,
-  })
-
-  if (signInError) {
-    console.error('Sign-in after signup failed:', signInError)
-    return { error: 'Account created, but could not log in automatically. Please sign in.' }
+    full_name: record.full_name,
+    role: 'customer',
   }
 
-  if (signInData.user) {
-    await mergeGuestCart(signInData.user.id)
-  }
+  await setUserSession(authUser)
+  await mergeGuestCart(userId)
 
   revalidatePath('/', 'layout')
   redirect(redirectTo)
 }
 
 // =============================================================
-// 2. REGULAR LOGIN FLOW (Instant Email + Password, 0 Emails Sent)
-// =============================================================
-export async function customerPasswordLogin(
-  _prevState: AuthResult,
-  formData: FormData
-): Promise<AuthResult> {
-  const supabase = await createClient()
-  const email = (formData.get('email') as string)?.trim().toLowerCase()
-  const password = formData.get('password') as string
-  const redirectTo = (formData.get('redirectTo') as string) || '/'
-
-  if (!email || !password) {
-    return { error: 'Email and password are required.' }
-  }
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
-
-  if (error) {
-    return { error: error.message || 'Invalid email or password.' }
-  }
-
-  if (data.user) {
-    await mergeGuestCart(data.user.id)
-  }
-
-  revalidatePath('/', 'layout')
-  redirect(redirectTo)
-}
-
-// =============================================================
-// 3. FORGOT PASSWORD FLOW (Step A: Send Reset Link via Brevo)
+// 4. FORGOT & RESET PASSWORD (Direct DB Table)
 // =============================================================
 export async function requestPasswordReset(
   _prevState: AuthResult,
@@ -336,12 +415,15 @@ export async function requestPasswordReset(
 
   const adminClient = createAdminClient()
 
-  // Verify account exists
-  const { data: profile } = await adminClient
-    .from('profiles')
-    .select('id, full_name, email')
-    .ilike('email', email)
-    .maybeSingle()
+  // Verify account exists in users or profiles
+  let profile: any = null
+  const { data: u } = await adminClient.from('users').select('id, full_name, email').ilike('email', email).maybeSingle()
+  if (u) {
+    profile = u
+  } else {
+    const { data: p } = await adminClient.from('profiles').select('id, full_name, email').ilike('email', email).maybeSingle()
+    profile = p
+  }
 
   if (!profile) {
     return { error: 'No account registered with this email address.' }
@@ -349,13 +431,10 @@ export async function requestPasswordReset(
 
   // Generate 64-char crypto token
   const resetToken = crypto.randomBytes(32).toString('hex')
-  const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 minutes validity
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString()
 
-  // Remove existing pending tokens for this email
   await adminClient.from('password_reset_tokens').delete().ilike('email', email)
-
-  // Insert new token
-  const { error: insertError } = await adminClient.from('password_reset_tokens').insert([
+  await adminClient.from('password_reset_tokens').insert([
     {
       email,
       token: resetToken,
@@ -364,16 +443,9 @@ export async function requestPasswordReset(
     },
   ])
 
-  if (insertError) {
-    console.error('Failed to store password reset token:', insertError)
-    return { error: 'Could not process password reset. Please try again.' }
-  }
-
-  // Construct URL
   const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   const resetUrl = `${origin}/reset-password?token=${resetToken}`
 
-  // Send branded email via Brevo
   const emailRes = await sendPasswordResetEmail({
     email,
     name: profile.full_name,
@@ -387,9 +459,6 @@ export async function requestPasswordReset(
   return { success: true }
 }
 
-// =============================================================
-// 3. FORGOT PASSWORD FLOW (Step B: Reset Password with Token)
-// =============================================================
 export async function resetPasswordWithToken(
   _prevState: AuthResult,
   formData: FormData
@@ -416,15 +485,15 @@ export async function resetPasswordWithToken(
 
   const adminClient = createAdminClient()
 
-  // Validate token in database
-  const { data: tokenRecord, error: tokenError } = await adminClient
+  // Validate token
+  const { data: tokenRecord } = await adminClient
     .from('password_reset_tokens')
     .select('*')
     .eq('token', token)
     .eq('used', false)
     .maybeSingle()
 
-  if (tokenError || !tokenRecord) {
+  if (!tokenRecord) {
     return { error: 'This password reset link is invalid or has already been used.' }
   }
 
@@ -432,44 +501,25 @@ export async function resetPasswordWithToken(
     return { error: 'This password reset link has expired. Please request a new one.' }
   }
 
-  // Find user by email
-  const { data: profile } = await adminClient
-    .from('profiles')
-    .select('id')
-    .ilike('email', tokenRecord.email)
-    .maybeSingle()
+  const newHash = hashPassword(password)
 
-  if (!profile) {
-    return { error: 'User account not found.' }
-  }
+  // Update password in users and profiles tables
+  await adminClient.from('users').update({ password_hash: newHash }).ilike('email', tokenRecord.email)
+  await adminClient.from('profiles').update({ password_hash: newHash }).ilike('email', tokenRecord.email)
 
-  // Update password in Supabase Auth
-  const { error: updateError } = await adminClient.auth.admin.updateUserById(profile.id, {
-    password,
-  })
-
-  if (updateError) {
-    console.error('Password update failed:', updateError)
-    return { error: updateError.message || 'Failed to update password.' }
-  }
-
-  // Mark token as used
+  // Mark token used
   await adminClient.from('password_reset_tokens').update({ used: true }).eq('id', tokenRecord.id)
 
-  // Auto-login user with new password
-  const supabase = await createClient()
-  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-    email: tokenRecord.email,
-    password,
-  })
+  // Fetch updated user to auto login
+  const { data: user } = await adminClient.from('users').select('*').ilike('email', tokenRecord.email).maybeSingle()
 
-  if (signInError) {
-    console.error('Auto-login after password reset failed:', signInError)
-    return { error: 'Password updated successfully. Please sign in with your new password.' }
-  }
-
-  if (signInData.user) {
-    await mergeGuestCart(signInData.user.id)
+  if (user) {
+    await setUserSession({
+      id: user.id,
+      email: user.email,
+      full_name: user.full_name,
+      role: user.role,
+    })
   }
 
   revalidatePath('/', 'layout')
@@ -477,7 +527,7 @@ export async function resetPasswordWithToken(
 }
 
 // =============================================================
-// Admin Login & Logout (Preserved unchanged)
+// 5. ADMIN LOGIN & LOGOUT
 // =============================================================
 export async function adminLogin(
   _prevState: AuthResult,
@@ -490,10 +540,9 @@ export async function adminLogin(
     return { error: 'Email and password are required' }
   }
 
-  const defaultAdminEmail = (process.env.ADMIN_EMAIL || 'admin@anishamasala.com').trim().toLowerCase()
+  const defaultAdminEmail = (process.env.ADMIN_EMAIL || 'admin@jaandaarmasale.com').trim().toLowerCase()
   const defaultAdminPassword = process.env.ADMIN_PASSWORD || 'admin@123'
 
-  // 1. Direct admin credential check for immediate dashboard access
   const isDefaultAdmin = email === defaultAdminEmail && password === defaultAdminPassword
 
   if (isDefaultAdmin) {
@@ -508,62 +557,32 @@ export async function adminLogin(
     redirect('/admin')
   }
 
-  // 2. Supabase DB Authentication fallback
-  try {
-    const supabase = await createClient()
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+  // Check admin user in DB
+  const adminClient = createAdminClient()
+  const { data: dbAdmin } = await adminClient
+    .from('users')
+    .select('*')
+    .ilike('email', email)
+    .eq('role', 'admin')
+    .maybeSingle()
+
+  if (dbAdmin && dbAdmin.password_hash && verifyPassword(password, dbAdmin.password_hash)) {
+    const cookieStore = await cookies()
+    cookieStore.set('admin_session', 'authenticated', {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7,
     })
-
-    if (error) {
-      if (isDefaultAdmin) {
-        const cookieStore = await cookies()
-        cookieStore.set('admin_session', 'authenticated', {
-          path: '/',
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          maxAge: 60 * 60 * 24 * 7,
-        })
-        revalidatePath('/admin', 'layout')
-        redirect('/admin')
-      }
-      return { error: error.message }
-    }
-
-    if (data?.user) {
-      const cookieStore = await cookies()
-      cookieStore.set('admin_session', 'authenticated', {
-        path: '/',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 24 * 7,
-      })
-      revalidatePath('/admin', 'layout')
-      redirect('/admin')
-    }
-  } catch (err: any) {
-    if (err?.message?.includes('NEXT_REDIRECT') || err?.digest?.includes('NEXT_REDIRECT')) {
-      throw err
-    }
-    if (isDefaultAdmin) {
-      const cookieStore = await cookies()
-      cookieStore.set('admin_session', 'authenticated', {
-        path: '/',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 24 * 7,
-      })
-      revalidatePath('/admin', 'layout')
-      redirect('/admin')
-    }
-    return { error: 'Invalid admin credentials or server connection issue' }
+    revalidatePath('/admin', 'layout')
+    redirect('/admin')
   }
 
   return { error: 'Invalid admin email or password' }
 }
 
 export async function logout() {
+  await clearUserSession()
   try {
     const cookieStore = await cookies()
     cookieStore.delete('admin_session')
@@ -574,6 +593,5 @@ export async function logout() {
   redirect('/login')
 }
 
-// Backward compatibility aliases
 export const sendOtp = requestSignupOtp
 export const verifyOtp = verifySignupOtp

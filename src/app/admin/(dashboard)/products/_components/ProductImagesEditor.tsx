@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { CldUploadWidget } from 'next-cloudinary'
+import { ImageKitUpload } from '@/components/admin/ImageKitUpload'
 import { Plus, X, Star, Loader2 } from 'lucide-react'
 import { addProductImage, deleteProductImage, setFeaturedImage } from '@/actions/products'
 import Image from 'next/image'
@@ -26,13 +26,11 @@ export function ProductImagesEditor({
   images: ProductImage[]
 }) {
   const [isPending, startTransition] = useTransition()
-  const [uploading, setUploading] = useState(false)
 
-  const handleUploadSuccess = (result: any) => {
-    setUploading(false)
-    if (result.info && result.info.secure_url) {
+  const handleUploadSuccess = (result: { url: string }) => {
+    if (result && result.url) {
       startTransition(async () => {
-        await addProductImage(product.id, result.info.secure_url)
+        await addProductImage(product.id, result.url)
       })
     }
   }
@@ -55,33 +53,28 @@ export function ProductImagesEditor({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium text-gray-900">Product Images</h3>
-        <CldUploadWidget
-          signatureEndpoint="/api/cloudinary/sign"
+        <ImageKitUpload
+          folder="/products"
+          multiple={true}
+          maxFiles={5}
           onSuccess={handleUploadSuccess}
-          onOpen={() => setUploading(true)}
-          options={{
-            multiple: true,
-            maxFiles: 5,
-          }}
         >
-          {({ open }) => {
-            return (
-              <button
-                type="button"
-                onClick={() => open()}
-                disabled={uploading || isPending}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-              >
-                {uploading || isPending ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Plus className="w-4 h-4 mr-2" />
-                )}
-                Upload Image
-              </button>
-            )
-          }}
-        </CldUploadWidget>
+          {({ open, isUploading }) => (
+            <button
+              type="button"
+              onClick={open}
+              disabled={isUploading || isPending}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 transition-colors cursor-pointer"
+            >
+              {isUploading || isPending ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4 mr-2" />
+              )}
+              Upload Image
+            </button>
+          )}
+        </ImageKitUpload>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
