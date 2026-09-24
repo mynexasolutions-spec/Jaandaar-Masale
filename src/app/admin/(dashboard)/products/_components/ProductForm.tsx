@@ -8,6 +8,7 @@ import {
 } from '@/actions/products'
 import Link from 'next/link'
 import { Save, ArrowLeft, IndianRupee } from 'lucide-react'
+import { ImageKitUpload } from '@/components/admin/ImageKitUpload'
 import type { Category, Product } from '@/types/database'
 
 interface ProductFormProps {
@@ -24,6 +25,8 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
     {}
   )
 
+  const [featuredImage, setFeaturedImage] = useState(product?.featured_image_url || '')
+  const [galleryImages, setGalleryImages] = useState<string[]>([])
   const [sellingPrice, setSellingPrice] = useState('')
   const [mrpPrice, setMrpPrice] = useState('')
 
@@ -174,6 +177,129 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
           >
             Featured — highlight on homepage
           </label>
+        </div>
+      </div>
+
+      {/* Product Images (ImageKit) */}
+      <div className="bg-white rounded-xl border border-stone-200/80 p-6 space-y-5">
+        <div>
+          <h2 className="text-base font-semibold text-stone-900">
+            Product Images
+          </h2>
+          <p className="text-xs text-stone-500 mt-0.5">
+            Upload product photos to ImageKit. The first image will be used as the primary card cover.
+          </p>
+        </div>
+
+        {/* Primary / Card Image */}
+        <div className="p-4 rounded-xl border border-stone-200 bg-stone-50/50 space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-orange-700">
+                1. Primary / Card Cover Image
+              </span>
+              <p className="text-xs text-stone-500 mt-0.5">
+                Main image displayed on product cards, category lists, and search results.
+              </p>
+            </div>
+            {featuredImage && (
+              <button
+                type="button"
+                onClick={() => setFeaturedImage('')}
+                className="text-xs text-red-600 hover:text-red-700 font-medium"
+              >
+                Remove
+              </button>
+            )}
+          </div>
+
+          <input type="hidden" name="featured_image_url" value={featuredImage} />
+
+          {featuredImage ? (
+            <div className="relative w-32 h-32 rounded-xl overflow-hidden border-2 border-orange-500 bg-white shadow-sm group">
+              <img
+                src={featuredImage}
+                alt="Primary product preview"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span className="text-white text-[11px] font-bold">Cover Image</span>
+              </div>
+            </div>
+          ) : (
+            <ImageKitUpload
+              folder="/products"
+              multiple={false}
+              buttonLabel="Upload Card Image (ImageKit)"
+              onSuccess={(res) => {
+                if (res?.url) {
+                  setFeaturedImage(res.url)
+                }
+              }}
+            />
+          )}
+        </div>
+
+        {/* Additional Gallery Images */}
+        <div className="p-4 rounded-xl border border-stone-200 bg-stone-50/50 space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                2. Additional Product Images (Gallery)
+              </span>
+              <p className="text-xs text-stone-500 mt-0.5">
+                Add multiple angle shots, packaging info, ingredients, or lifestyle photos.
+              </p>
+            </div>
+          </div>
+
+          <input type="hidden" name="gallery_images" value={JSON.stringify(galleryImages)} />
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+            {galleryImages.map((imgUrl, idx) => (
+              <div
+                key={idx}
+                className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 bg-white shadow-xs group"
+              >
+                <img
+                  src={imgUrl}
+                  alt={`Gallery image ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => setGalleryImages(galleryImages.filter((_, i) => i !== idx))}
+                  className="absolute top-1.5 right-1.5 p-1 bg-red-600 text-white rounded-full opacity-90 hover:opacity-100 shadow-sm"
+                  title="Remove Image"
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+                <span className="absolute bottom-1.5 left-1.5 px-2 py-0.5 rounded-md bg-stone-900/80 text-white text-[10px] font-medium">
+                  #{idx + 1}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-2">
+            <ImageKitUpload
+              folder="/products"
+              multiple={true}
+              maxFiles={10}
+              buttonLabel="Upload More Images (ImageKit)"
+              onSuccess={(res) => {
+                if (res?.url) {
+                  setGalleryImages((prev) => [...prev, res.url])
+                  if (!featuredImage) {
+                    setFeaturedImage(res.url)
+                  }
+                }
+              }}
+            />
+          </div>
         </div>
       </div>
 

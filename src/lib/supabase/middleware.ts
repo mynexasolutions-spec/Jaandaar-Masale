@@ -68,7 +68,7 @@ export async function updateSession(request: NextRequest) {
         }
 
         const hasAdminCookie = request.cookies.get('admin_session')?.value === 'authenticated'
-        if (!user && !hasAdminCookie) {
+        if (!hasAdminCookie) {
           const url = request.nextUrl.clone()
           url.pathname = '/admin/login'
           return NextResponse.redirect(url)

@@ -66,7 +66,7 @@ export async function createOrder(
         return { success: false, error: 'Session expired. Please re-enter your address.' }
       }
 
-      const { data: address } = await supabase
+      const { data: address } = await adminClient
         .from('addresses')
         .select('*')
         .eq('id', addressInput)
@@ -141,7 +141,7 @@ export async function createOrder(
       // If user is logged in, optionally save this address for future 1-click checkout
       if (user) {
         try {
-          const { data: savedAddr } = await supabase
+          const { data: savedAddr } = await adminClient
             .from('addresses')
             .insert([{
               user_id: user.id,

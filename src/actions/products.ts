@@ -55,6 +55,8 @@ export async function createProduct(
   const originalPriceStr = formData.get('original_price') as string
   const variantName = ((formData.get('variant_name') as string) || '').trim() || 'Standard Pack'
   const stockQuantityStr = formData.get('stock_quantity') as string
+  const featuredImageUrl = (formData.get('featured_image_url') as string) || null
+  const galleryImagesRaw = formData.get('gallery_images') as string
 
   if (!name) {
     return { error: 'Product name is required' }
@@ -70,6 +72,7 @@ export async function createProduct(
     description: description || null,
     seo_title: seoTitle || null,
     seo_description: seoDescription || null,
+    featured_image_url: featuredImageUrl,
     is_active: isActive,
     is_featured: isFeatured,
   }).select('id').single()
@@ -79,6 +82,37 @@ export async function createProduct(
       return { error: 'A product with this name already exists' }
     }
     return { error: error.message }
+  }
+
+  // If featured_image_url or gallery images were provided, insert them into product_images
+  const imagesToInsert: { product_id: string; image_url: string; sort_order: number }[] = []
+  if (featuredImageUrl) {
+    imagesToInsert.push({
+      product_id: product.id,
+      image_url: featuredImageUrl,
+      sort_order: 0,
+    })
+  }
+
+  if (galleryImagesRaw) {
+    try {
+      const parsedGallery: string[] = JSON.parse(galleryImagesRaw)
+      parsedGallery.forEach((url, idx) => {
+        if (url && url !== featuredImageUrl) {
+          imagesToInsert.push({
+            product_id: product.id,
+            image_url: url,
+            sort_order: imagesToInsert.length,
+          })
+        }
+      })
+    } catch {
+      // Ignore json parse error
+    }
+  }
+
+  if (imagesToInsert.length > 0) {
+    await supabase.from('product_images').insert(imagesToInsert)
   }
 
   // If price is provided, create the initial variant automatically
@@ -126,6 +160,7 @@ export async function updateProduct(
   const seoDescription = formData.get('seo_description') as string
   const isActive = formData.get('is_active') === 'on'
   const isFeatured = formData.get('is_featured') === 'on'
+  const featuredImageUrl = formData.get('featured_image_url') as string | null
 
   if (!id || !name) {
     return { error: 'Product ID and name are required' }
@@ -133,19 +168,25 @@ export async function updateProduct(
 
   const slug = slugify(name)
 
+  const updatePayload: any = {
+    name,
+    slug,
+    category_id: categoryId || null,
+    short_description: shortDescription || null,
+    description: description || null,
+    seo_title: seoTitle || null,
+    seo_description: seoDescription || null,
+    is_active: isActive,
+    is_featured: isFeatured,
+  }
+
+  if (featuredImageUrl !== null && featuredImageUrl !== undefined) {
+    updatePayload.featured_image_url = featuredImageUrl || null
+  }
+
   const { error } = await supabase
     .from('products')
-    .update({
-      name,
-      slug,
-      category_id: categoryId || null,
-      short_description: shortDescription || null,
-      description: description || null,
-      seo_title: seoTitle || null,
-      seo_description: seoDescription || null,
-      is_active: isActive,
-      is_featured: isFeatured,
-    })
+    .update(updatePayload)
     .eq('id', id)
 
   if (error) {
@@ -180,7 +221,7 @@ export async function saveProductInformation(
   productId: string,
   items: { id?: string; label: string; value: string; display_order: number }[]
 ): Promise<ActionResult> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // Delete existing items and re-insert
   const { error: deleteError } = await supabase
@@ -219,7 +260,7 @@ export async function addProductImage(
   productId: string,
   imageUrl: string
 ): Promise<ActionResult> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // Get max sort_order
   const { data: maxSort } = await supabase
@@ -228,9 +269,9 @@ export async function addProductImage(
     .eq('product_id', productId)
     .order('sort_order', { ascending: false })
     .limit(1)
-    .single()
+    .maybeSingle()
 
-  const nextSort = maxSort ? maxSort.sort_order + 1 : 0
+  const nextSort = maxSort && typeof maxSort.sort_order === 'number' ? maxSort.sort_order + 1 : 0
 
   const { error } = await supabase.from('product_images').insert({
     product_id: productId,
@@ -239,11 +280,18 @@ export async function addProductImage(
   })
 
   if (error) {
+    console.error('Error inserting product image:', error)
     return { error: error.message }
   }
 
-  // If this is the only image, automatically set it as featured
-  if (nextSort === 0) {
+  // If product doesn't have a featured image yet or this is first image, set as featured
+  const { data: currentProduct } = await supabase
+    .from('products')
+    .select('featured_image_url')
+    .eq('id', productId)
+    .single()
+
+  if (!currentProduct?.featured_image_url || nextSort === 0) {
     await supabase
       .from('products')
       .update({ featured_image_url: imageUrl })
@@ -251,18 +299,21 @@ export async function addProductImage(
   }
 
   revalidatePath(`/admin/products/${productId}/edit`)
+  revalidatePath('/admin/products')
+  revalidatePath('/shop')
+  revalidatePath('/')
   return { success: true }
 }
 
 export async function deleteProductImage(imageId: string, productId: string): Promise<ActionResult> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // Check if this is the featured image before deleting
   const { data: image } = await supabase
     .from('product_images')
     .select('image_url')
     .eq('id', imageId)
-    .single()
+    .maybeSingle()
 
   const { error } = await supabase.from('product_images').delete().eq('id', imageId)
 
@@ -276,7 +327,7 @@ export async function deleteProductImage(imageId: string, productId: string): Pr
       .from('products')
       .select('featured_image_url')
       .eq('id', productId)
-      .single()
+      .maybeSingle()
 
     if (product?.featured_image_url === image.image_url) {
       // Find another image to feature
@@ -286,7 +337,7 @@ export async function deleteProductImage(imageId: string, productId: string): Pr
         .eq('product_id', productId)
         .order('sort_order', { ascending: true })
         .limit(1)
-        .single()
+        .maybeSingle()
 
       await supabase
         .from('products')
@@ -296,6 +347,9 @@ export async function deleteProductImage(imageId: string, productId: string): Pr
   }
 
   revalidatePath(`/admin/products/${productId}/edit`)
+  revalidatePath('/admin/products')
+  revalidatePath('/shop')
+  revalidatePath('/')
   return { success: true }
 }
 
@@ -303,7 +357,7 @@ export async function setFeaturedImage(
   productId: string,
   imageUrl: string
 ): Promise<ActionResult> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { error } = await supabase
     .from('products')
@@ -315,6 +369,9 @@ export async function setFeaturedImage(
   }
 
   revalidatePath(`/admin/products/${productId}/edit`)
+  revalidatePath('/admin/products')
+  revalidatePath('/shop')
+  revalidatePath('/')
   return { success: true }
 }
 
@@ -322,7 +379,7 @@ export async function reorderProductImages(
   productId: string,
   orderedIds: string[]
 ): Promise<ActionResult> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   for (let i = 0; i < orderedIds.length; i++) {
     await supabase

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ShieldCheck, Truck, Package, MapPin, Check, Loader2 } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { addToCart } from '@/actions/cart'
 import { useCart } from '@/contexts/CartContext'
 
@@ -32,65 +32,8 @@ export function ProductVariantSelector({ variants }: { variants: Variant[] }) {
   const [isAdding, setIsAdding] = useState(false)
   const [isBuying, setIsBuying] = useState(false)
   const [addedSuccess, setAddedSuccess] = useState(false)
-  const [pincode, setPincode] = useState('')
-  const [isCheckingPincode, setIsCheckingPincode] = useState(false)
-  const [pincodeResult, setPincodeResult] = useState<{
-    status: 'idle' | 'success' | 'invalid'
-    city?: string
-    state?: string
-    time?: string
-    cod?: boolean
-    message?: string
-  }>({ status: 'idle' })
   const router = useRouter()
   const { refreshCart } = useCart()
-
-  const handleCheckPincode = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const clean = pincode.trim()
-    if (!/^\d{6}$/.test(clean)) {
-      setPincodeResult({ 
-        status: 'invalid', 
-        message: 'Please enter a 6-digit Indian PIN code.' 
-      })
-      return
-    }
-
-    setIsCheckingPincode(true)
-    try {
-      const res = await fetch(`/api/pincode?code=${clean}`)
-      const data = await res.json()
-
-      if (!data.valid) {
-        setPincodeResult({
-          status: 'invalid',
-          message: data.message || 'Invalid Indian Postal PIN code. Please enter a valid PIN code.',
-        })
-        return
-      }
-
-      // Metro check (Delhi 11, Mumbai 40, Kolkata 70, Chennai 60, Bengaluru 56, Hyderabad 50)
-      const isMetro = /^(11|40|70|60|56|50)/.test(clean)
-      const location = data.city ? `${data.city}, ${data.state}` : data.state || 'Your Location'
-
-      setPincodeResult({
-        status: 'success',
-        city: location,
-        state: data.state,
-        time: isMetro ? '2–3 Business Days' : '3–5 Business Days',
-        cod: true,
-      })
-    } catch {
-      // Fallback
-      setPincodeResult({
-        status: 'success',
-        time: '3–5 Business Days',
-        cod: true,
-      })
-    } finally {
-      setIsCheckingPincode(false)
-    }
-  }
 
   if (activeVariants.length === 0) {
     return (
@@ -250,60 +193,6 @@ export function ProductVariantSelector({ variants }: { variants: Variant[] }) {
         </button>
       </div>
 
-      {/* 📍 Pincode Delivery & COD Availability Checker */}
-      <div className="mt-6 p-4 rounded-2xl bg-[#FAF6F2] border border-[#E8DFD5]">
-        <div className="flex items-center gap-2 mb-2.5">
-          <MapPin className="w-4 h-4 text-[#7B111A]" />
-          <span className="text-xs font-bold uppercase tracking-wider text-[#2A1612]">
-            Check Delivery & COD Availability
-          </span>
-        </div>
-
-        <form onSubmit={handleCheckPincode} className="flex gap-2">
-          <input
-            type="text"
-            maxLength={6}
-            value={pincode}
-            onChange={(e) => {
-              setPincode(e.target.value.replace(/\D/g, ''))
-              if (pincodeResult.status !== 'idle') setPincodeResult({ status: 'idle' })
-            }}
-            placeholder="Enter 6-digit pincode (e.g. 110001)"
-            className="flex-1 px-4 py-2 text-xs rounded-xl bg-white border border-[#E8DFD5] text-[#2A1612] placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#7B111A]"
-          />
-          <button
-            type="submit"
-            disabled={isCheckingPincode}
-            className="px-4 py-2 bg-[#7B111A] hover:bg-[#520C12] text-white text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-60 flex items-center gap-1.5"
-          >
-            {isCheckingPincode && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-            <span>{isCheckingPincode ? 'Checking...' : 'Check'}</span>
-          </button>
-        </form>
-
-        {pincodeResult.status === 'success' && (
-          <div className="mt-3 pt-2.5 border-t border-[#E8DFD5] text-xs space-y-1 animate-in fade-in duration-200">
-            <p className="font-bold text-emerald-800 flex items-center gap-1.5">
-              <span>✅</span>
-              <span>
-                Verified Delivery to{' '}
-                <span className="underline decoration-[#7B111A]/40">{pincodeResult.city}</span> ({pincodeResult.time})
-              </span>
-            </p>
-            <p className="text-[#5A433B] flex items-center gap-1.5">
-              <span>💵</span>
-              <span>Cash on Delivery (COD) &amp; Online Payment Available</span>
-            </p>
-          </div>
-        )}
-
-        {pincodeResult.status === 'invalid' && (
-          <p className="mt-2.5 text-xs font-medium text-rose-600 animate-in fade-in duration-200">
-            ⚠️ {pincodeResult.message || 'Please enter a valid 6-digit Indian delivery pincode.'}
-          </p>
-        )}
-      </div>
-      
       {/* Stock Low Indicator */}
       {selectedVariant?.stock_quantity && selectedVariant.stock_quantity < 15 && (
         <p className="mt-3 text-xs font-semibold text-amber-700 text-center flex items-center justify-center gap-1.5">
@@ -311,49 +200,6 @@ export function ProductVariantSelector({ variants }: { variants: Variant[] }) {
           Only {selectedVariant.stock_quantity} packs left in current batch!
         </p>
       )}
-
-      {/* Luxury Trust Assurances */}
-      <div className="mt-8 pt-6 border-t border-[#E8DFD5] grid grid-cols-2 gap-3 sm:gap-4">
-        <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-[#E8DFD5]/70">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#7B111A]/10 text-[#7B111A]">
-            <ShieldCheck className="h-4 w-4" />
-          </div>
-          <div className="text-left">
-            <span className="block text-xs font-bold text-[#2A1612]">100% Authentic</span>
-            <span className="block text-[11px] text-[#8C7567]">Pure & Unadulterated</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-[#E8DFD5]/70">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#7B111A]/10 text-[#7B111A]">
-            <Truck className="h-4 w-4" />
-          </div>
-          <div className="text-left">
-            <span className="block text-xs font-bold text-[#2A1612]">Fast Dispatch</span>
-            <span className="block text-[11px] text-[#8C7567]">All-India Doorstep Delivery</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-[#E8DFD5]/70">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#7B111A]/10 text-[#7B111A]">
-            <Package className="h-4 w-4" />
-          </div>
-          <div className="text-left">
-            <span className="block text-xs font-bold text-[#2A1612]">Free Shipping</span>
-            <span className="block text-[11px] text-[#8C7567]">On orders above ₹500</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-[#E8DFD5]/70">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#7B111A]/10 text-[#7B111A]">
-            <MapPin className="h-4 w-4" />
-          </div>
-          <div className="text-left">
-            <span className="block text-xs font-bold text-[#2A1612]">Farm Fresh</span>
-            <span className="block text-[11px] text-[#8C7567]">Origin Verified Source</span>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

@@ -254,7 +254,7 @@ export default async function ProductDetailsPage({
           </div>
         </div>
 
-        {/* Unified Tabs Section: About, Specifications, FAQs & Reviews */}
+        {/* Product Information, Specs, FAQs & Customer Reviews Tabs */}
         <ProductTabsSection
           productId={product.id}
           productName={product.name}

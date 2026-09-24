@@ -1,17 +1,22 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { revalidatePath } from 'next/cache'
 
 export async function submitInquiry(formData: FormData) {
-  const supabase = await createClient()
+  const adminSupabase = createAdminClient()
 
-  const first_name = formData.get('first-name') as string
-  const last_name = formData.get('last-name') as string
-  const email = formData.get('email') as string
-  const message = formData.get('message') as string
+  const firstName = ((formData.get('first-name') || formData.get('firstName') || formData.get('first_name') || '') as string).trim()
+  const lastName = ((formData.get('last-name') || formData.get('lastName') || formData.get('last_name') || '') as string).trim()
+  const directName = ((formData.get('name') || '') as string).trim()
+  const fullName = directName || `${firstName} ${lastName}`.trim()
 
-  if (!first_name || !last_name || !email || !message) {
-    return { success: false, error: 'All fields are required.' }
+  const email = (formData.get('email') as string)?.trim().toLowerCase()
+  const phone = (formData.get('phone') as string)?.trim() || null
+  const message = (formData.get('message') as string)?.trim()
+
+  if (!fullName || !email || !message) {
+    return { success: false, error: 'Full name, email address, and message are required.' }
   }
 
   // Validate email
@@ -20,19 +25,21 @@ export async function submitInquiry(formData: FormData) {
     return { success: false, error: 'Please provide a valid email address.' }
   }
 
-  const { error } = await supabase
+  const { error } = await adminSupabase
     .from('inquiries')
     .insert([{
-      name: `${first_name.trim()} ${last_name.trim()}`.trim(),
-      email: email.trim().toLowerCase(),
-      message: message.trim(),
+      name: fullName,
+      email,
+      phone,
+      message,
       is_resolved: false,
     }])
 
   if (error) {
     console.error('Failed to submit inquiry:', error)
-    return { success: false, error: 'Something went wrong. Please try again later.' }
+    return { success: false, error: 'Something went wrong while submitting your inquiry. Please try again.' }
   }
 
+  revalidatePath('/admin/inquiries')
   return { success: true }
 }

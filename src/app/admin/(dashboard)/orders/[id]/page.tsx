@@ -1,6 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, User, MapPin, Package, CreditCard } from 'lucide-react'
@@ -19,29 +17,13 @@ export default async function AdminOrderDetailsPage({
 }) {
   const resolvedParams = await params
   const orderId = resolvedParams.id
-  const cookieStore = await cookies()
-  const isAdminCookie = cookieStore.get('admin_session')?.value === 'authenticated'
-  const supabase = isAdminCookie ? createAdminClient() : await createClient()
+  const supabase = createAdminClient()
 
   // Fetch Order Details
   const { data: order } = await supabase
     .from('orders')
     .select(`
       *,
-      profiles:user_id (
-        full_name,
-        email,
-        phone
-      ),
-      addresses:address_id (
-        full_name,
-        phone,
-        address_line_1,
-        address_line_2,
-        city,
-        state,
-        postal_code
-      ),
       order_items (*)
     `)
     .eq('id', orderId)
@@ -104,9 +86,17 @@ export default async function AdminOrderDetailsPage({
                 Customer
               </h3>
               <div className="space-y-2 text-sm">
-                <p className="font-medium text-stone-900">{order.profiles?.full_name || 'Guest'}</p>
-                <p className="text-stone-600">{order.profiles?.email}</p>
-                {order.profiles?.phone && <p className="text-stone-600">{order.profiles.phone}</p>}
+                <p className="font-medium text-stone-900">
+                  {order.shipping_address?.full_name || order.profiles?.full_name || 'Customer'}
+                </p>
+                <p className="text-stone-600">
+                  {order.shipping_address?.email || order.profiles?.email || 'N/A'}
+                </p>
+                {(order.shipping_address?.phone || order.profiles?.phone) && (
+                  <p className="text-stone-600">
+                    Phone: {order.shipping_address?.phone || order.profiles?.phone}
+                  </p>
+                )}
               </div>
             </div>
 

@@ -1,6 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { Eye, Search, Filter } from 'lucide-react'
 
@@ -11,21 +9,17 @@ export const metadata = {
 export const dynamic = 'force-dynamic'
 
 export default async function AdminOrdersPage() {
-  const cookieStore = await cookies()
-  const isAdminCookie = cookieStore.get('admin_session')?.value === 'authenticated'
-  const supabase = isAdminCookie ? createAdminClient() : await createClient()
+  const supabase = createAdminClient()
 
-  // Fetch all orders with user profile info
-  const { data: orders } = await supabase
+  // Fetch all orders from DB
+  const { data: orders, error } = await supabase
     .from('orders')
-    .select(`
-      *,
-      profiles:user_id (
-        full_name,
-        email
-      )
-    `)
+    .select('*')
     .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching admin orders:', error)
+  }
 
   return (
     <div className="space-y-6">
