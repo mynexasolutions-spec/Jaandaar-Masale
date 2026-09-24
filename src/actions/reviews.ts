@@ -33,6 +33,7 @@ export async function submitReview(
 
     const adminClient = createAdminClient()
 
+    // 1. Insert Review into database
     const { error: insertError } = await adminClient
       .from('reviews')
       .insert({
@@ -40,7 +41,7 @@ export async function submitReview(
         user_id: user.id,
         rating,
         review_text: reviewText ? reviewText.trim() : null,
-        is_approved: false // Reviews must be approved by admin
+        is_approved: true, // Visible immediately on product page
       })
 
     if (insertError) {
@@ -48,7 +49,33 @@ export async function submitReview(
       return { error: 'Failed to submit review. Please try again later.' }
     }
 
+    // 2. Automatically update product average_rating & review_count
+    try {
+      const { data: allReviews } = await adminClient
+        .from('reviews')
+        .select('rating')
+        .eq('product_id', productId)
+        .eq('is_approved', true)
+
+      if (allReviews && allReviews.length > 0) {
+        const sum = allReviews.reduce((acc, curr) => acc + (Number(curr.rating) || 0), 0)
+        const avg = sum / allReviews.length
+
+        await adminClient
+          .from('products')
+          .update({
+            average_rating: parseFloat(avg.toFixed(1)),
+            review_count: allReviews.length,
+          })
+          .eq('id', productId)
+      }
+    } catch (aggErr) {
+      console.warn('Could not update product ratings aggregate:', aggErr)
+    }
+
+    revalidatePath('/', 'layout')
     revalidatePath(`/product/[slug]`)
+    revalidatePath('/admin/reviews')
     return { success: true }
   } catch (err: any) {
     console.error('Unexpected error submitting review:', err)

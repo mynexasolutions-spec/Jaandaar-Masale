@@ -15,7 +15,7 @@ export function TextModeToggle({ currentMode }: { currentMode: 'global' | 'per_s
     startTransition(async () => {
       const result = await updateHeroTextMode(newMode)
       if (!result.success) {
-        alert(result.error)
+        alert(result.error || 'Failed to update text mode')
         setMode(mode) // Revert on error
       }
     })

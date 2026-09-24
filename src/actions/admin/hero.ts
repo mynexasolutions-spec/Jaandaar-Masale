@@ -29,7 +29,7 @@ export async function updateGlobalHeroText(data: {
   return { success: true }
 }
 
-export async function updateHeroTextMode(_mode: 'global' | 'per_slide') {
+export async function updateHeroTextMode(_mode: 'global' | 'per_slide'): Promise<{ success: boolean; error?: string }> {
   // Graceful no-op for text mode toggle so schema error never occurs
   revalidatePath('/', 'layout')
   revalidatePath('/admin/hero-slides')

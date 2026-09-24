@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ProductImageGallery } from '@/components/storefront/ProductImageGallery'
@@ -64,10 +65,10 @@ export default async function ProductDetailsPage({
   isAuthenticated = !!effectiveUser
 
   try {
-    const supabase = await createClient()
+    const adminClient = createAdminClient()
 
     // Fetch product and all related data from database
-    const { data: dbProduct } = await supabase
+    const { data: dbProduct } = await adminClient
       .from('products')
       .select(`
         *,
@@ -87,16 +88,53 @@ export default async function ProductDetailsPage({
 
     // If db product exists, fetch reviews & related products
     if (product) {
-      const { data: reviewsData } = await supabase
+      const adminClient = createAdminClient()
+      const { data: reviewsData } = await adminClient
         .from('reviews')
-        .select('id, rating, review_text, created_at, user:profiles(full_name)')
+        .select('*')
         .eq('product_id', product.id)
-        .eq('is_approved', true)
         .order('created_at', { ascending: false })
 
-      reviews = reviewsData || []
+      if (reviewsData && reviewsData.length > 0) {
+        const userIds = [...new Set(reviewsData.map((r: any) => r.user_id).filter(Boolean))]
+        const profilesMap: Record<string, string> = {}
 
-      const { data: relatedProductsData } = await supabase
+        if (userIds.length > 0) {
+          const { data: profiles } = await adminClient
+            .from('profiles')
+            .select('id, full_name')
+            .in('id', userIds)
+
+          if (profiles) {
+            profiles.forEach((p: any) => {
+              if (p.id && p.full_name) profilesMap[p.id] = p.full_name
+            })
+          }
+
+          const { data: users } = await adminClient
+            .from('users')
+            .select('id, full_name')
+            .in('id', userIds)
+
+          if (users) {
+            users.forEach((u: any) => {
+              if (u.id && u.full_name && !profilesMap[u.id]) profilesMap[u.id] = u.full_name
+            })
+          }
+        }
+
+        reviews = reviewsData.map((r: any) => ({
+          id: r.id,
+          rating: Number(r.rating) || 5,
+          review_text: r.review_text,
+          created_at: r.created_at,
+          user: {
+            full_name: profilesMap[r.user_id] || 'Verified Customer',
+          },
+        }))
+      }
+
+      const { data: relatedProductsData } = await adminClient
         .from('products')
         .select(`
           id,

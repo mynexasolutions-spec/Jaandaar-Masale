@@ -93,6 +93,9 @@ export function ProductTabsSection({
       setReviewError(result.error)
     } else {
       setReviewSuccess(true)
+      setTimeout(() => {
+        window.location.reload()
+      }, 1200)
     }
     setIsSubmittingReview(false)
   }
