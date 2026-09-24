@@ -14,9 +14,10 @@ import type { Category, Product } from '@/types/database'
 interface ProductFormProps {
   product?: Product
   categories: Category[]
+  initialGalleryImages?: string[]
 }
 
-export default function ProductForm({ product, categories }: ProductFormProps) {
+export default function ProductForm({ product, categories, initialGalleryImages = [] }: ProductFormProps) {
   const isEditing = !!product
   const action = isEditing ? updateProduct : createProduct
 
@@ -26,7 +27,7 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
   )
 
   const [featuredImage, setFeaturedImage] = useState(product?.featured_image_url || '')
-  const [galleryImages, setGalleryImages] = useState<string[]>([])
+  const [galleryImages, setGalleryImages] = useState<string[]>(initialGalleryImages)
   const [sellingPrice, setSellingPrice] = useState('')
   const [mrpPrice, setMrpPrice] = useState('')
 

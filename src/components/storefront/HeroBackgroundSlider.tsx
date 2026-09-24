@@ -63,9 +63,6 @@ export function HeroBackgroundSlider({
 
   const currentSlide = slides[currentIndex] || slides[0]
 
-  // Resolved dynamic text matching each specific slide
-  const tag = currentSlide.tag || '✦ 100% Pure Indian Spices'
-
   const title =
     textMode === 'per_slide'
       ? currentSlide.title || globalText?.title || 'Pure Spice. Real Taste. Trusted Every Time.'
@@ -75,10 +72,10 @@ export function HeroBackgroundSlider({
     textMode === 'per_slide'
       ? currentSlide.subtitle ||
         globalText?.subtitle ||
-        "Jaandaar Masale brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor."
+        "Anisha Spices brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor."
       : globalText?.subtitle ||
         currentSlide.subtitle ||
-        "Jaandaar Masale brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor."
+        "Anisha Spices brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor."
 
   const buttonText =
     textMode === 'per_slide'
@@ -92,182 +89,147 @@ export function HeroBackgroundSlider({
 
   return (
     <section
-      className="relative overflow-hidden bg-gradient-to-b from-[#F5E6DF] via-[#F8ECE7] to-[#FAF3EB] py-8 sm:py-12 lg:py-16 select-none"
+      className="relative overflow-hidden min-h-[560px] sm:min-h-[620px] lg:min-h-[680px] flex items-center select-none bg-[#F6EDE5]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* Ambient background subtle decorative elements */}
-      <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-[#E5AD58]/10 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-[#7B111A]/8 blur-3xl pointer-events-none" />
+      {/* 🖼️ BACKGROUND IMAGES SLIDER (No white gradient overlay) */}
+      <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
+        {slides.map((slide, index) => {
+          const isActive = index === currentIndex
+          return (
+            <div
+              key={slide.id || index}
+              className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+                isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+              }`}
+            >
+              <Image
+                src={slide.image_url}
+                alt={slide.title || 'Anisha Spices'}
+                fill
+                priority={index === 0}
+                sizes="100vw"
+                className="object-cover object-right md:object-center"
+              />
+            </div>
+          )
+        })}
+        {/* Subtle dark backdrop on left to make pure white text pop with high contrast */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent z-10 pointer-events-none" />
+      </div>
 
-      {/* Main Hero Container */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      {/* 📝 OVERLAID TEXT CONTENT (Pure White for Maximum Legibility) */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-20 w-full py-16 sm:py-20 lg:py-28 pb-28 sm:pb-36 lg:pb-44">
+        <div className="max-w-xl lg:max-w-2xl space-y-6 sm:space-y-8 text-left">
           
-          {/* Left Column: Headlines, Dynamic Text, CTA Buttons, Trust Badges */}
-          <div className="lg:col-span-6 xl:col-span-6 space-y-4 sm:space-y-6 text-center lg:text-left">
-            
-            {/* Slide Tag Badge */}
-            <div
-              key={`tag-${currentIndex}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-[#C89B65]/40 text-xs font-bold text-[#7B111A] shadow-xs backdrop-blur-xs transition-all duration-500 animate-in fade-in"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#C89B65] animate-pulse" />
-              <span>{tag}</span>
-            </div>
-
-            {/* Dynamic Animated Headline */}
-            <div
-              key={`title-${currentIndex}`}
-              className="transition-all duration-500 animate-in fade-in slide-in-from-bottom-2"
-            >
-              <h1 className="font-serif text-2xl xs:text-3xl sm:text-4xl lg:text-[44px] xl:text-[50px] font-bold tracking-tight text-[#2A1612] leading-[1.18]">
-                {title}
-              </h1>
-            </div>
-
-            {/* Dynamic Animated Subtitle */}
-            <div
-              key={`sub-${currentIndex}`}
-              className="transition-all duration-500 animate-in fade-in slide-in-from-bottom-3"
-            >
-              <p className="text-xs sm:text-base lg:text-lg text-[#5A433B] max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
-                {subtitle}
-              </p>
-            </div>
-
-            {/* CTA Action Buttons */}
-            <div
-              key={`cta-${currentIndex}`}
-              className="flex flex-row items-center justify-center lg:justify-start gap-2.5 sm:gap-4 pt-1 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4"
-            >
-              <Link
-                href={buttonLink}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-full bg-[#7B111A] px-5 sm:px-8 py-3 sm:py-3.5 text-xs sm:text-base font-semibold text-white shadow-md shadow-[#7B111A]/25 hover:bg-[#520C12] hover:shadow-lg transition-all transform hover:-translate-y-0.5 text-center cursor-pointer"
-              >
-                <span>{buttonText}</span>
-                <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </Link>
-              <Link
-                href="/about"
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center rounded-full border border-[#B3927D] bg-white/80 backdrop-blur-sm px-4 sm:px-8 py-3 sm:py-3.5 text-xs sm:text-base font-semibold text-[#2A1612] hover:bg-[#F2E8DC] hover:border-[#7B111A] transition-all text-center cursor-pointer"
-              >
-                Our Story
-              </Link>
-            </div>
-
-            {/* 3 Trust Badges */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-6 pt-3 sm:pt-4 max-w-md mx-auto lg:mx-0 border-t border-[#E8DFD5]/80">
-              <div className="flex flex-col items-center sm:items-start text-center sm:text-left gap-1 group">
-                <div className="p-1.5 sm:p-2 rounded-full bg-[#7B111A]/10 text-[#7B111A] group-hover:scale-110 transition-transform">
-                  <Leaf className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </div>
-                <span className="text-[11px] sm:text-xs font-bold text-[#2A1612] leading-tight">100% Natural</span>
-              </div>
-
-              <div className="flex flex-col items-center sm:items-start text-center sm:text-left gap-1 group">
-                <div className="p-1.5 sm:p-2 rounded-full bg-[#7B111A]/10 text-[#7B111A] group-hover:scale-110 transition-transform">
-                  <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </div>
-                <span className="text-[11px] sm:text-xs font-bold text-[#2A1612] leading-tight">No Preservatives</span>
-              </div>
-
-              <div className="flex flex-col items-center sm:items-start text-center sm:text-left gap-1 group">
-                <div className="p-1.5 sm:p-2 rounded-full bg-[#7B111A]/10 text-[#7B111A] group-hover:scale-110 transition-transform">
-                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </div>
-                <span className="text-[11px] sm:text-xs font-bold text-[#2A1612] leading-tight">Premium Quality</span>
-              </div>
-            </div>
-
+          {/* Animated Headline in Crisp White */}
+          <div
+            key={`title-${currentIndex}`}
+            className="transition-all duration-500 animate-in fade-in slide-in-from-bottom-2"
+          >
+            <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.12] drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">
+              {title}
+            </h1>
           </div>
 
-          {/* Right Column: Middle Showcase Image (Direct clean image without thick border/box) */}
-          <div className="lg:col-span-6 xl:col-span-6 flex items-center justify-center relative">
-            
-            <div className="relative w-full max-w-[340px] xs:max-w-[380px] sm:max-w-[440px] lg:max-w-[480px] aspect-square flex items-center justify-center">
-              
-              {/* Clean Image Container */}
-              <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-2xl shadow-[#7B111A]/15 bg-white/40">
-                {slides.map((slide, index) => {
-                  const isActive = index === currentIndex
-                  return (
-                    <div
-                      key={slide.id || index}
-                      className={`absolute inset-0 transition-all duration-700 ease-in-out ${
-                        isActive
-                          ? 'opacity-100 scale-100 z-10'
-                          : 'opacity-0 scale-105 z-0 pointer-events-none'
-                      }`}
-                    >
-                      <Image
-                        src={slide.image_url}
-                        alt={slide.title || 'Jaandaar Masale Artisanal Spice'}
-                        fill
-                        priority={index === 0}
-                        sizes="(max-width: 768px) 90vw, (max-width: 1200px) 45vw, 500px"
-                        className="object-cover transition-transform duration-700 hover:scale-105"
-                      />
-                    </div>
-                  )
-                })}
-              </div>
+          {/* Animated Subtitle in White */}
+          <div
+            key={`sub-${currentIndex}`}
+            className="transition-all duration-500 animate-in fade-in slide-in-from-bottom-3"
+          >
+            <p className="text-sm sm:text-base lg:text-lg text-white/95 max-w-lg leading-relaxed font-medium drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
+              {subtitle}
+            </p>
+          </div>
 
+          {/* CTA Action Buttons */}
+          <div
+            key={`cta-${currentIndex}`}
+            className="flex flex-wrap items-center gap-3 sm:gap-4 pt-1 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4"
+          >
+            <Link
+              href={buttonLink}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#7B111A] hover:bg-[#520C12] px-7 sm:px-8 py-3.5 text-sm sm:text-base font-semibold text-white shadow-lg border border-white/20 hover:shadow-xl transition-all transform hover:-translate-y-0.5 text-center cursor-pointer"
+            >
+              <span>{buttonText}</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+
+            <Link
+              href="/about"
+              className="inline-flex items-center justify-center rounded-full bg-white hover:bg-[#FAF3EB] text-[#2A1612] px-7 sm:px-8 py-3.5 text-sm sm:text-base font-bold transition-all text-center cursor-pointer shadow-md hover:shadow-lg"
+            >
+              Our Story
+            </Link>
+          </div>
+
+          {/* 3 Trust Badges in Crisp White */}
+          <div className="flex flex-wrap items-center gap-6 sm:gap-10 pt-4 border-t border-white/30">
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 rounded-full bg-white/20 text-white backdrop-blur-xs border border-white/20 shadow-xs">
+                <Leaf className="w-4 h-4" />
+              </div>
+              <span className="text-xs sm:text-sm font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">100% Natural</span>
             </div>
 
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 rounded-full bg-white/20 text-white backdrop-blur-xs border border-white/20 shadow-xs">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <span className="text-xs sm:text-sm font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">No Preservatives</span>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 rounded-full bg-white/20 text-white backdrop-blur-xs border border-white/20 shadow-xs">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <span className="text-xs sm:text-sm font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">Premium Quality</span>
+            </div>
           </div>
 
         </div>
-
-        {/* Bottom Slide Indicators & Navigation Arrows on Bottom Right */}
-        {slideCount > 1 && (
-          <div className="mt-6 sm:mt-10 flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
-            
-            {/* Slide Dots & Counter */}
-            <div className="flex items-center gap-2 bg-white/70 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#E8DFD5] shadow-xs">
-              {slides.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setCurrentIndex(i)}
-                  className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
-                    i === currentIndex
-                      ? 'w-7 bg-[#7B111A]'
-                      : 'w-2.5 bg-[#2A1612]/25 hover:bg-[#2A1612]/50'
-                  }`}
-                  aria-label={`Go to slide ${i + 1}`}
-                />
-              ))}
-              <span className="text-xs font-semibold text-[#8C7567] ml-1.5 font-mono">
-                {currentIndex + 1} / {slideCount}
-              </span>
-            </div>
-
-            {/* Prev & Next Arrow Buttons on Bottom Right */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <button
-                type="button"
-                onClick={prevSlide}
-                aria-label="Previous Slide"
-                className="p-2 sm:p-2.5 rounded-full bg-white text-[#2A1612] shadow-md border border-[#E8DFD5] hover:bg-[#FAF3EB] hover:text-[#7B111A] transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center"
-              >
-                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-
-              <button
-                type="button"
-                onClick={nextSlide}
-                aria-label="Next Slide"
-                className="p-2 sm:p-2.5 rounded-full bg-white text-[#2A1612] shadow-md border border-[#E8DFD5] hover:bg-[#FAF3EB] hover:text-[#7B111A] transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center"
-              >
-                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-            </div>
-
-          </div>
-        )}
-
       </div>
+
+      {/* 🔘 SLIDE CONTROLS (Moved higher up with comfortable bottom margin) */}
+      {slideCount > 1 && (
+        <div className="absolute bottom-20 sm:bottom-24 md:bottom-28 lg:bottom-32 right-4 sm:right-8 lg:right-12 z-30 flex items-center gap-3 bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#E8DFD5] shadow-md">
+          {/* Dots */}
+          <div className="flex items-center gap-1.5">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setCurrentIndex(i)}
+                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                  i === currentIndex ? 'w-6 bg-[#6B111A]' : 'w-2 bg-[#2A1612]/30 hover:bg-[#2A1612]/60'
+                }`}
+                aria-label={`Go to slide ${i + 1}`}
+              />
+            ))}
+          </div>
+
+          {/* Arrows */}
+          <div className="flex items-center gap-1 ml-2 border-l border-[#E8DFD5] pl-2">
+            <button
+              type="button"
+              onClick={prevSlide}
+              aria-label="Previous Slide"
+              className="p-1 rounded-full text-[#2A1612] hover:text-[#6B111A] transition-colors cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={nextSlide}
+              aria-label="Next Slide"
+              className="p-1 rounded-full text-[#2A1612] hover:text-[#6B111A] transition-colors cursor-pointer"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

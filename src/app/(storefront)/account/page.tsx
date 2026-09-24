@@ -68,10 +68,15 @@ export default async function AccountProfilePage() {
     .maybeSingle()
 
   // 3. Fetch Orders Count
-  const { count: ordersCount } = await adminClient
+  const userEmail = (directUser?.email || supabaseUser?.email || '').trim().toLowerCase()
+  const { data: userOrders } = await adminClient
     .from('orders')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', activeUserId)
+    .select('id, user_id, shipping_address')
+
+  const ordersCount = (userOrders || []).filter(o => 
+    (activeUserId && o.user_id === activeUserId) || 
+    (userEmail && o.shipping_address?.email?.trim().toLowerCase() === userEmail)
+  ).length
 
   return (
     <div className="space-y-6">

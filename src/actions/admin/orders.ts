@@ -37,11 +37,6 @@ export async function updateOrderStatus(orderId: string, status: string) {
     order_status: status,
     updated_at: new Date().toISOString()
   }
-  
-  // Set timestamps based on new status
-  if (status === 'shipped') updateData.shipped_at = new Date().toISOString()
-  if (status === 'delivered') updateData.delivered_at = new Date().toISOString()
-  if (status === 'cancelled') updateData.cancelled_at = new Date().toISOString()
 
   // Use Admin client to reliably update orders bypassing RLS
   const adminClient = createAdminClient()
@@ -73,9 +68,6 @@ export async function updatePaymentStatus(orderId: string, status: string) {
     payment_status: status,
     updated_at: new Date().toISOString()
   }
-  
-  // Set timestamps based on new status
-  if (status === 'paid') updateData.paid_at = new Date().toISOString()
 
   // Use Admin client to reliably update orders bypassing RLS
   const adminClient = createAdminClient()

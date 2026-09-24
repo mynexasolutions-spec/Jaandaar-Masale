@@ -111,9 +111,9 @@ export default function CustomerList({ initialCustomers }: CustomerListProps) {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-stone-500">
-                      <div className="flex items-center gap-2">
+                      <div suppressHydrationWarning className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-stone-400" />
-                        {new Date(customer.created_at).toLocaleDateString()}
+                        {new Date(customer.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

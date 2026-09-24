@@ -107,8 +107,8 @@ export function ReviewList({ initialReviews }: { initialReviews: Review[] }) {
                   <p className="text-sm text-stone-600 truncate" title={review.review_text || ''}>
                     {review.review_text || <span className="italic text-stone-400">No text</span>}
                   </p>
-                  <div className="text-xs text-stone-400 mt-1">
-                    {new Date(review.created_at).toLocaleDateString()}
+                  <div suppressHydrationWarning className="text-xs text-stone-400 mt-1">
+                    {new Date(review.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </div>
                 </td>
                 <td className="p-4 text-right">

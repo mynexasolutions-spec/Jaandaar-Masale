@@ -61,7 +61,11 @@ export function SpiceRangeSection({
 }: {
   products?: LiveSpiceItem[]
 }) {
-  const spiceRange = products.length > 0 ? products : defaultSpiceRange
+  const spiceRange = products
+
+  if (spiceRange.length === 0) {
+    return null
+  }
 
   return (
     <section className="py-12 sm:py-16 bg-[#F8ECE7] relative overflow-hidden">

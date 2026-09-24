@@ -188,7 +188,7 @@ export function ProductVariantSelector({ variants }: { variants: Variant[] }) {
           {isBuying ? (
             <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           ) : (
-            'Buy Now — Express Checkout'
+            'Buy Now'
           )}
         </button>
       </div>

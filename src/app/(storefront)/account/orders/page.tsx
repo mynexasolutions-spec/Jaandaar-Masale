@@ -75,19 +75,18 @@ export default async function AccountOrdersPage() {
     }
   }
 
-  // Fetch all orders with items and addresses via admin client (bypasses RLS so customer's guest/email orders are never hidden)
+  // Fetch all orders with items via admin client (bypasses RLS so customer's orders are never hidden)
   const { data: allOrders } = await adminClient
     .from('orders')
     .select(`
       *,
-      order_items (*),
-      addresses:address_id (*)
+      order_items (*)
     `)
     .order('created_at', { ascending: false })
 
   // Match orders:
   // - If store admin: show all orders so store owner can track all customer orders
-  // - If customer: match by user_id OR by shipping_address email
+  // - If customer: match by user_id OR by shipping_address email, name, OR phone
   const orders = (allOrders || []).filter((order) => {
     if (isStoreAdmin) return true
 
@@ -95,6 +94,18 @@ export default async function AccountOrdersPage() {
 
     const orderEmail = order.shipping_address?.email?.trim().toLowerCase()
     if (effectiveEmail && orderEmail && orderEmail === effectiveEmail) return true
+
+    const userPhoneClean = user?.phone?.replace(/\D/g, '')
+    const orderPhoneClean = order.shipping_address?.phone?.replace(/\D/g, '')
+    if (userPhoneClean && orderPhoneClean && userPhoneClean.length >= 10 && userPhoneClean === orderPhoneClean) {
+      return true
+    }
+
+    if (user?.full_name && order.shipping_address?.full_name) {
+      if (user.full_name.trim().toLowerCase() === order.shipping_address.full_name.trim().toLowerCase()) {
+        return true
+      }
+    }
 
     return false
   })

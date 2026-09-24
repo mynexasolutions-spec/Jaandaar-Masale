@@ -6,6 +6,7 @@ import { ProductVariantSelector } from '@/components/storefront/ProductVariantSe
 import { ProductTabsSection } from '@/components/storefront/ProductTabsSection'
 import { ProductCard } from '@/components/storefront/ProductCard'
 import { FALLBACK_PRODUCTS, FallbackProduct } from '@/constants/fallbackProducts'
+import { getEffectiveUser } from '@/lib/userAuth'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -58,6 +59,10 @@ export default async function ProductDetailsPage({
   let reviews: any[] = []
   let relatedProducts: any[] = []
 
+  // Check effective logged-in user
+  const effectiveUser = await getEffectiveUser()
+  isAuthenticated = !!effectiveUser
+
   try {
     const supabase = await createClient()
 
@@ -78,16 +83,6 @@ export default async function ProductDetailsPage({
 
     if (dbProduct) {
       product = dbProduct
-    }
-
-    // Check authentication status
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      isAuthenticated = !!user
-    } catch {
-      // Ignore
     }
 
     // If db product exists, fetch reviews & related products

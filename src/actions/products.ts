@@ -196,7 +196,45 @@ export async function updateProduct(
     return { error: error.message }
   }
 
+  // Update gallery images if provided
+  const galleryImagesRaw = formData.get('gallery_images') as string
+  if (galleryImagesRaw) {
+    try {
+      const parsedGallery: string[] = JSON.parse(galleryImagesRaw)
+      // Delete old product images and re-insert
+      await supabase.from('product_images').delete().eq('product_id', id)
+
+      const imagesToInsert: { product_id: string; image_url: string; sort_order: number }[] = []
+      if (featuredImageUrl) {
+        imagesToInsert.push({
+          product_id: id,
+          image_url: featuredImageUrl,
+          sort_order: 0,
+        })
+      }
+
+      parsedGallery.forEach((url) => {
+        if (url && url !== featuredImageUrl) {
+          imagesToInsert.push({
+            product_id: id,
+            image_url: url,
+            sort_order: imagesToInsert.length,
+          })
+        }
+      })
+
+      if (imagesToInsert.length > 0) {
+        await supabase.from('product_images').insert(imagesToInsert)
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
   revalidatePath('/admin/products')
+  revalidatePath(`/admin/products/${id}/edit`)
+  revalidatePath('/shop')
+  revalidatePath('/')
   redirect('/admin/products')
 }
 

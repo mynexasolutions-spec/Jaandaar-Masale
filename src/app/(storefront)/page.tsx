@@ -8,9 +8,9 @@ import { BottomBanner } from '@/components/storefront/BottomBanner'
 import { SPICE_ASSETS } from '@/constants/assets'
 
 export const metadata = {
-  title: 'Jaandaar Masale — Pure Spice. Real Taste. Trusted Every Time.',
+  title: 'Anisha Spices — Pure Spice. Real Taste. Trusted Every Time.',
   description:
-    'Jaandaar Masale brings the richness of India\'s finest spices to your kitchen. Pure, natural & full of flavor.',
+    "Anisha Spices brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor.",
 }
 
 export const dynamic = 'force-dynamic'
@@ -21,7 +21,7 @@ export default async function HomePage() {
   try {
     const supabase = await createClient()
 
-    // Dynamically fetch featured spices first, then active products (controlled by Admin Panel)
+    // Dynamically fetch ONLY active and featured products selected by admin
     const { data: dbProducts } = await supabase
       .from('products')
       .select(`
@@ -33,9 +33,8 @@ export default async function HomePage() {
         product_variants (price, is_active)
       `)
       .eq('is_active', true)
-      .order('is_featured', { ascending: false })
+      .eq('is_featured', true)
       .order('created_at', { ascending: true })
-      .limit(10)
 
     if (dbProducts && dbProducts.length > 0) {
       liveProducts = dbProducts.map((p: any) => {
@@ -48,14 +47,14 @@ export default async function HomePage() {
           name: p.name,
           slug: p.slug,
           image: p.featured_image_url || SPICE_ASSETS.redChilly,
-          tag: p.is_featured ? 'Best Seller' : null,
+          tag: 'Featured',
           href: `/product/${p.slug}`,
           priceText: minPrice ? `From ₹${minPrice}` : undefined,
         }
       })
     }
   } catch {
-    // Graceful fallback to default curated items
+    // Graceful error handling
   }
 
   return (

@@ -64,6 +64,7 @@ export default async function EditProductPage({
       <ProductForm
         product={productRes.data}
         categories={categoriesRes.data || []}
+        initialGalleryImages={imagesRes.data?.map(img => img.image_url) || []}
       />
 
       {/* Additional Info & FAQs only shown when editing */}
@@ -76,13 +77,6 @@ export default async function EditProductPage({
         <ProductVariantsEditor
           productId={id}
           variants={variantsRes.data || []}
-        />
-      </div>
-
-      <div className="bg-white p-6 shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
-        <ProductImagesEditor
-          product={productRes.data}
-          images={imagesRes.data || []}
         />
       </div>
 

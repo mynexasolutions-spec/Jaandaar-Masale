@@ -84,8 +84,8 @@ export function InquiriesList({ initialInquiries }: { initialInquiries: any[] })
               </div>
               
               <div className="flex items-center gap-4 ml-4">
-                <span className="text-xs text-stone-400 font-medium whitespace-nowrap">
-                  {new Date(inquiry.created_at).toLocaleDateString()}
+                <span suppressHydrationWarning className="text-xs text-stone-400 font-medium whitespace-nowrap">
+                  {new Date(inquiry.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </span>
                 <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
                   {isUnread && (
