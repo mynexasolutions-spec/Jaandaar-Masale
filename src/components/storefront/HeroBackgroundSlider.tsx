@@ -72,10 +72,10 @@ export function HeroBackgroundSlider({
     textMode === 'per_slide'
       ? currentSlide.subtitle ||
         globalText?.subtitle ||
-        "Anisha Spices brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor."
+        "Jaandaar Masle brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor."
       : globalText?.subtitle ||
         currentSlide.subtitle ||
-        "Anisha Spices brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor."
+        "Jaandaar Masle brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor."
 
   const buttonText =
     textMode === 'per_slide'
@@ -106,7 +106,7 @@ export function HeroBackgroundSlider({
             >
               <Image
                 src={slide.image_url}
-                alt={slide.title || 'Anisha Spices'}
+                alt={slide.title || 'Jaandaar Masle'}
                 fill
                 priority={index === 0}
                 sizes="100vw"

@@ -209,7 +209,7 @@ export async function createHeroSlide(imageUrl: string, slideData?: any) {
     .insert([{
       image_url: imageUrl,
       title: slideData?.title || 'Pure Spice. Real Taste. Trusted Every Time.',
-      subtitle: slideData?.subtitle || "Anisha Spices brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor.",
+      subtitle: slideData?.subtitle || "Jaandaar Masle brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor.",
       button_text: slideData?.button_text || 'Shop Now',
       button_link: slideData?.button_link || '/shop',
       is_active: true,

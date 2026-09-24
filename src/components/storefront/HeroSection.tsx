@@ -66,7 +66,7 @@ export async function HeroSection() {
   let textMode: 'global' | 'per_slide' = 'per_slide'
   let globalText: GlobalHeroText = {
     title: 'Pure Spice. Real Taste. Trusted Every Time.',
-    subtitle: "Anisha Spices brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor.",
+    subtitle: "Jaandaar Masle brings the richness of India's finest spices to your kitchen. Pure, natural & full of flavor.",
     button_text: 'Shop Now',
     button_link: '/shop',
   }
